@@ -6,10 +6,12 @@ class marker_cache {
     // API for managing shared memory and retrieving handles to data
     // Takes identifier of the bloom filter (per subtable, per marker type)
     // For our purposes, identifier is just the marker type (int32)
-   public:
-    // Create new cache, size bits, fp false-positive rate
+public:
+	// max 4.2 billion bytes
     marker_cache(size_t bytes);
     ~marker_cache();
+	// Create new cache, size bits, fp false-positive rate
+	// max 4.2 billion items
     void create(int id, double fp, size_t capacity, size_t seed = 0,
                 bool double_hashing = true, bool partition = true);
 

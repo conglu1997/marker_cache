@@ -3,7 +3,6 @@
 
 #include <functional>
 #include "h3.h"
-#include "object.h"
 
 namespace bf {
 
@@ -11,10 +10,10 @@ namespace bf {
 typedef size_t digest;
 
 /// The hash function type.
-typedef std::function<digest(object const&)> hash_function;
+typedef std::function<digest(char *data, int size)> hash_function;
 
-/// A function that hashes an object *k* times.
-typedef std::function<std::vector<digest>(object const&)> hasher;
+/// A function that hashes an (*, count) pair k times.
+typedef std::function<std::vector<digest>(char *data, int size)> hasher;
 
 class default_hash_function {
    public:
@@ -22,7 +21,7 @@ class default_hash_function {
 
     default_hash_function(size_t seed);
 
-    size_t operator()(object const& o) const;
+    size_t operator()(char *data, int size) const;
 
    private:
     h3<size_t, max_obj_size> h3_;
@@ -33,7 +32,7 @@ class default_hasher {
    public:
     default_hasher(std::vector<hash_function> fns);
 
-    std::vector<digest> operator()(object const& o) const;
+    std::vector<digest> operator()(char *data, int size) const;
 
    private:
     std::vector<hash_function> fns_;
@@ -45,7 +44,7 @@ class double_hasher {
    public:
     double_hasher(size_t k, hash_function h1, hash_function h2);
 
-    std::vector<digest> operator()(object const& o) const;
+    std::vector<digest> operator()(char *data, int size) const;
 
    private:
     size_t k_;

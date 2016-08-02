@@ -23,11 +23,10 @@ shm_bloom_filter::shm_bloom_filter(shm_bloom_filter &&other)
 
 bool shm_bloom_filter::lookup(char *data, int data_len) const {
     // the size of a char is 1 byte
-    auto digests = hasher_({data, data_len / sizeof(char)});
-    // assert(bits_.size() % digests.size() == 0);
+    auto digests = hasher_(data, data_len * sizeof(char));
     if (partition_) {
         auto parts = bits_.size() / digests.size();
-        for (auto i = 0; i < digests.size(); ++i)
+        for (size_t i = 0; i < digests.size(); ++i)
             if (!bits_[i * parts + (digests[i] % parts)]) return false;
     } else {
         for (auto d : digests)
@@ -38,11 +37,10 @@ bool shm_bloom_filter::lookup(char *data, int data_len) const {
 }
 
 void shm_bloom_filter::add(char *data, int data_len) {
-    auto digests = hasher_({data, data_len * sizeof(char)});
-    // assert(bits_.size() % digests.size() == 0);
+    auto digests = hasher_(data, data_len * sizeof(char));
     if (partition_) {
         auto parts = bits_.size() / digests.size();
-        for (auto i = 0; i < digests.size(); ++i)
+        for (size_t i = 0; i < digests.size(); ++i)
             bits_[i * parts + (digests[i] % parts)] = true;
     } else {
         for (auto d : digests) bits_[d % bits_.size()] = true;
@@ -53,6 +51,7 @@ void shm_bloom_filter::clear() { std::fill(bits_.begin(), bits_.end(), false); }
 
 size_t shm_bloom_filter::m(double fp, size_t capacity) {
     auto ln2 = std::log(2);
+    // safe casting from doubles to unsigned ints
     return std::ceil(-(capacity * std::log(fp) / ln2 / ln2));
 }
 
@@ -60,4 +59,5 @@ size_t shm_bloom_filter::k(size_t cells, size_t capacity) {
     auto frac = static_cast<double>(cells) / static_cast<double>(capacity);
     return std::ceil(frac * std::log(2));
 }
-}
+
+}  // namespace bf
