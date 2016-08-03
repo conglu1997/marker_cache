@@ -21,7 +21,9 @@ class marker_cache {
     // For our purposes, identifier is just the marker type (int32)
    public:
     // max 4.2 billion bytes (unsigned integer)
-    marker_cache(size_t bytes, bool owner = true);
+	// By default we create the memory, SD will take map the memory for read-only
+    marker_cache(size_t bytes, boost::interprocess::create_only_t c = boost::interprocess::create_only);
+	marker_cache(size_t bytes, boost::interprocess::open_read_only_t o);
     ~marker_cache();
     // Create new cache, size bits, fp false-positive rate
     // max 4.2 billion items, returns the bytes it uses
