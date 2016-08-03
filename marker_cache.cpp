@@ -4,7 +4,7 @@
 marker_cache::marker_cache(size_t bytes)
     : segment_(boost::interprocess::open_or_create, "BFSharedMemory", bytes) {
 	
-    data_ = segment_.construct<bf::id_bf_map>("MarkerCache")(std::less<int>(),
+    data_ = segment_.find_or_construct<bf::id_bf_map>("MarkerCache")(std::less<int>(),
                                                              get_allocator());
 	assert(segment_.find<bf::id_bf_map>("MarkerCache").first != 0);
 }

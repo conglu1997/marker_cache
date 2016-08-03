@@ -29,16 +29,18 @@ vector<char*> generate_test_data(size_t num_elems, size_t width) {
 }
 
 int main() {
-    // Clear shared memory object before creation
+    // Clear shared memory object before creation, this will not be done on the
+    // search director side
     boost::interprocess::shared_memory_object::remove("BFSharedMemory");
-	auto bytes_allocated = 100000000;
-    marker_cache m(bytes_allocated);  // bytes -- should be on the order of 100MB
+    auto bytes_allocated = 100000000;
+    marker_cache m(
+        bytes_allocated);  // bytes -- should be on the order of 100MB
 
     auto test_size = 10000000;  // ten million
     auto test_fprate = 0.001;   // 1 in 1 thousand
     auto test_width = 8;        // 8 byte char[]
     auto falsepos = 0;
-	static_assert(sizeof(char) == 1, "Chars used are the correct size.");
+    static_assert(sizeof(char) == 1, "Chars used are the correct size.");
 
     m.create(1, test_fprate, test_size, 0, false, false);
 
