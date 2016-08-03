@@ -15,6 +15,7 @@ hasher::hasher(size_t k, const void_allocator &void_alloc, size_t seed)
     : fns_(void_alloc) {
     assert(k > 0);
     std::minstd_rand0 prng(seed);
+	fns_.reserve(k);
     for (size_t i = 0; i < k; ++i) fns_.emplace_back(hash_function(prng()));
 }
 

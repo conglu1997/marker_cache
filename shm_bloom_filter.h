@@ -18,7 +18,7 @@ class shm_bloom_filter {
     shm_bloom_filter(shm_bloom_filter &&);
 
     bool lookup(char *data, int data_len) const;
-    void add(char *data, int data_len);
+    void insert(char *data, int data_len);
     void clear();
 
    private:

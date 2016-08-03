@@ -4,7 +4,7 @@ marker_cache::marker_cache(size_t bytes)
     : segment_(boost::interprocess::create_only, "BFSharedMemory", bytes), owner_(true) {
     data_ = segment_.construct<id_bf_map>("MarkerCache")(std::less<int>(),
                                                          get_allocator());
-    assert(segment_.find<bf::id_bf_map>("MarkerCache").first != 0);
+    assert(segment_.find<bf::id_bf_map>("MarkerCache").first != NULL);
 }
 
 marker_cache::marker_cache()
@@ -47,7 +47,7 @@ bool marker_cache::lookup_from(marker_cache_id id, char *data,
 }
 
 void marker_cache::insert_into(marker_cache_id id, char *data, int data_len) {
-    data_->at(id).add(data, data_len);
+    data_->at(id).insert(data, data_len);
     // std::out_of_range thrown if invalid access
 }
 

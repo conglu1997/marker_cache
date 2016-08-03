@@ -19,7 +19,7 @@ bool shm_bloom_filter::lookup(char *data, int data_len) const {
     return true;
 }
 
-void shm_bloom_filter::add(char *data, int data_len) {
+void shm_bloom_filter::insert(char *data, int data_len) {
     auto digests = hasher_(data, data_len * sizeof(char));
     for (auto d : digests) bits_[d % bits_.size()] = true;
 }
