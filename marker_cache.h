@@ -29,6 +29,7 @@ class marker_cache {
                   size_t seed = 0, bool double_hashing = true,
                   bool partition = true);
 
+	// Check if a bloom filter exists with this id
 	bool exists(marker_cache_id id);
 
     // data_len is num of chars (bytes)
@@ -36,6 +37,7 @@ class marker_cache {
 
     void insert_into(marker_cache_id id, char *data, int data_len);
 
+	// Remove a bloom filter
     void remove(marker_cache_id id);
 
    private:

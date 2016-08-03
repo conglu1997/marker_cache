@@ -26,7 +26,6 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
 }
 
 bool marker_cache::exists(marker_cache_id id) {
-	// return true if a bloom filter exists with id id.
 	return data_->find(id) != data_->end();
 }
 
