@@ -2,15 +2,15 @@
 
 marker_cache::marker_cache(size_t bytes, boost::interprocess::create_only_t c)
     : segment_(c, "BFSharedMemory", bytes), owner_(true) {
-    data_ = segment_.construct<id_bf_map>("MarkerCache")(
-        std::less<int>(), get_allocator());
+    data_ = segment_.construct<id_bf_map>("MarkerCache")(std::less<int>(),
+                                                         get_allocator());
     assert(segment_.find<bf::id_bf_map>("MarkerCache").first != 0);
 }
 
 marker_cache::marker_cache(boost::interprocess::open_read_only_t o)
-	: segment_(o, "BFSharedMemory"), owner_(false) {
-	data_ = segment_.find<id_bf_map>("MarkerCache").first;
-	assert(data_ != NULL);
+    : segment_(o, "BFSharedMemory"), owner_(false) {
+    data_ = segment_.find<id_bf_map>("MarkerCache").first;
+    assert(data_ != NULL);
 }
 
 marker_cache::~marker_cache() {
@@ -21,13 +21,18 @@ marker_cache::~marker_cache() {
 }
 
 size_t marker_cache::create(const marker_cache_id id, double fp,
-                            size_t capacity, size_t seed, bool double_hashing,
-                            bool partition) {
-	// Throws if a read-only trys to create a bloom filter
+                            size_t capacity, size_t seed) {
+    // Throws if a read-only trys to create a bloom filter
     auto f = segment_.get_free_memory();
+    
+    // Work out optimum parameters
+	auto ln2 = std::log(2);
+    size_t m = std::ceil(-(capacity * std::log(fp) / ln2 / ln2));
+    auto frac = static_cast<double>(m) / static_cast<double>(capacity);
+    size_t k = std::ceil(frac * std::log(2));
+
     data_->insert(
-        bf_pair(id, bf::shm_bloom_filter(get_allocator(), fp, capacity, seed,
-                                         double_hashing, partition)));
+        bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k, seed)));
     return f - segment_.get_free_memory();
 }
 

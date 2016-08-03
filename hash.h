@@ -1,6 +1,9 @@
 #ifndef BF_HASH_POLICY_H
 #define BF_HASH_POLICY_H
 
+#define BOOST_DATE_TIME_NO_LIB
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
 #include <functional>
 #include "h3.h"
 
@@ -9,17 +12,16 @@ namespace bf {
 /// The hash digest type.
 typedef size_t digest;
 
-/// The hash function type.
-typedef std::function<digest(char *data, int size)> hash_function;
+// Allocate our hasher in shared memory as well
+typedef boost::interprocess::managed_shared_memory::segment_manager
+    segment_manager_t;
+typedef boost::interprocess::allocator<void, segment_manager_t> void_allocator;
 
-/// A function that hashes a (*, count) pair *k* times.
-typedef std::function<std::vector<digest>(char *data, int size)> hasher;
-
-class default_hash_function {
+class hash_function {
    public:
     constexpr static size_t max_obj_size = 36;
 
-    default_hash_function(size_t seed);
+    hash_function(size_t seed);
 
     size_t operator()(char *data, int size) const;
 
@@ -27,46 +29,19 @@ class default_hash_function {
     h3<size_t, max_obj_size> h3_;
 };
 
+typedef boost::interprocess::allocator<hash_function, segment_manager_t>
+    hash_fn_allocator;
+
 /// A hasher which hashes a (*, count) pair *k* times.
-class default_hasher {
+class hasher {
    public:
-    default_hasher(std::vector<hash_function> fns);
+    hasher(size_t k, const void_allocator &void_alloc, size_t seed);
 
     std::vector<digest> operator()(char *data, int size) const;
 
    private:
-    std::vector<hash_function> fns_;
+    std::vector<hash_function, hash_fn_allocator> fns_;
 };
-
-/// A hasher which hashes a (*, count) pair two times and generates *k* digests
-/// through
-/// a linear combinations of the two digests.
-class double_hasher {
-   public:
-    double_hasher(size_t k, hash_function h1, hash_function h2);
-
-    std::vector<digest> operator()(char *data, int size) const;
-
-   private:
-    size_t k_;
-    hash_function h1_;
-    hash_function h2_;
-};
-
-/// Creates a default or double hasher with the default hash function, using
-/// seeds from a linear congruential PRNG.
-///
-/// @param k The number of hash functions to use.
-///
-/// @param seed The initial seed of the PRNG.
-///
-/// @param double_hashing If `true`, the function constructs a ::double_hasher
-/// and a ::default_hasher otherwise.
-///
-/// @return A ::hasher with the *k* hash functions.
-///
-/// @pre `k > 0`
-hasher make_hasher(size_t k, size_t seed = 0, bool double_hashing = false);
 
 }  // namespace bf
 

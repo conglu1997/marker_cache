@@ -35,14 +35,14 @@ int main() {
     auto bytes_allocated = 100000000;
     marker_cache m(bytes_allocated);  // bytes -- on the order of 100MB
 
-    auto test_size = 10000000;  // 10 million
+    auto test_size = 1000000;  // 1 million
     auto test_fprate = 0.001;  // 1 in 1 thousand
     auto test_width = 8;       // 8 byte char[]
     auto falsepos = 0;
     static_assert(sizeof(char) == 1, "Chars used are the correct size.");
 
     cout << "Object occupies "
-         << m.create(1, test_fprate, test_size, 0, false, false) << " bytes."
+         << m.create(1, test_fprate, test_size, 0) << " bytes."
          << endl;
 
     cout << "Priming test data:" << endl;

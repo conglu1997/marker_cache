@@ -32,8 +32,7 @@ class marker_cache {
     // Create new cache, size bits, fp false-positive rate
     // max 4.2 billion items, returns the bytes it uses
     size_t create(marker_cache_id id, double fp, size_t capacity,
-                  size_t seed = 0, bool double_hashing = true,
-                  bool partition = true);
+                  size_t seed = 0);
 
     // Check if a bloom filter exists with this id
     bool exists(marker_cache_id id);
