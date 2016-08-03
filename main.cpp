@@ -42,7 +42,7 @@ int main() {
     auto falsepos = 0;
     static_assert(sizeof(char) == 1, "Chars used are the correct size.");
 
-    m.create(1, test_fprate, test_size, 0, false, false);
+	std::cout << "Object occupies " << m.create(1, test_fprate, test_size, 0, false, false) << " bytes." << std::endl;
 
     cout << "Priming test data:" << endl;
 

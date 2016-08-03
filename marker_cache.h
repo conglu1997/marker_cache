@@ -24,8 +24,8 @@ class marker_cache {
     marker_cache(size_t bytes);
     ~marker_cache();
     // Create new cache, size bits, fp false-positive rate
-    // max 4.2 billion items
-    void create(bloom_filter_id id, double fp, size_t capacity, size_t seed = 0,
+    // max 4.2 billion items, returns the bytes it uses
+    size_t create(bloom_filter_id id, double fp, size_t capacity, size_t seed = 0,
                 bool double_hashing = true, bool partition = true);
 
     // data_len is num of chars (bytes)
