@@ -33,8 +33,7 @@ int main() {
     // search director side
     boost::interprocess::shared_memory_object::remove("BFSharedMemory");
     auto bytes_allocated = 100000000;
-    marker_cache m(
-        bytes_allocated);  // bytes -- should be on the order of 100MB
+    marker_cache m(bytes_allocated);  // bytes -- on the order of 100MB
 
     auto test_size = 1000000;  // 1 million
     auto test_fprate = 0.001;  // 1 in 1 thousand
@@ -53,11 +52,11 @@ int main() {
 
     cout << "Test data generated." << endl;
 
-    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
+    auto begin = chrono::steady_clock::now();
 
     for (auto str : v) m.insert_into(1, str, test_width);
 
-    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+    auto end = chrono::steady_clock::now();
 
     cout << "Finished " << test_size << " inserts in "
          << chrono::duration_cast<chrono::milliseconds>(end - begin).count()
