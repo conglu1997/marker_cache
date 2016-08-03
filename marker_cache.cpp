@@ -1,14 +1,16 @@
 #include "marker_cache.h"
 
 marker_cache::marker_cache(size_t bytes)
-    : segment_(boost::interprocess::create_only, "BFSharedMemory", bytes), owner_(true) {
+    : segment_(boost::interprocess::create_only, "BFSharedMemory", bytes),
+      owner_(true) {
     data_ = segment_.construct<id_bf_map>("MarkerCache")(std::less<int>(),
                                                          get_allocator());
     assert(segment_.find<bf::id_bf_map>("MarkerCache").first != NULL);
 }
 
 marker_cache::marker_cache()
-    : segment_(boost::interprocess::open_read_only, "BFSharedMemory"), owner_(false) {
+    : segment_(boost::interprocess::open_read_only, "BFSharedMemory"),
+      owner_(false) {
     data_ = segment_.find<id_bf_map>("MarkerCache").first;
     assert(data_ != NULL);
 }
@@ -54,6 +56,12 @@ void marker_cache::insert_into(marker_cache_id id, char *data, int data_len) {
 void marker_cache::remove(marker_cache_id id) {
     data_->erase(id);
     // may throw an exception from the compare object
+}
+
+void marker_cache::erase() {
+    for (auto it = data_->cbegin(); it != data_->cend();) {
+        data_->erase(it++);
+    }
 }
 
 bf::void_allocator marker_cache::get_allocator() {

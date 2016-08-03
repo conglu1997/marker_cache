@@ -44,6 +44,9 @@ class marker_cache {
     // Remove a bloom filter
     void remove(marker_cache_id id);
 
+    // Erase all the bloom filters
+    void erase();
+
    private:
     boost::interprocess::managed_shared_memory segment_;
     id_bf_map *data_;
