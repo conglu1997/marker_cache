@@ -1,5 +1,4 @@
 #include "marker_cache.h"
-#include <iostream>
 
 marker_cache::marker_cache(size_t bytes, boost::interprocess::create_only_t c)
     : segment_(c, "BFSharedMemory", bytes), owner_(true) {
@@ -25,18 +24,17 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
                             size_t capacity, size_t seed) {
     // Throws if a read-only trys to create a bloom filter
     auto f = segment_.get_free_memory();
-    
+
     // Work out optimum parameters
-	auto ln2 = std::log(2);
+    auto ln2 = std::log(2);
     size_t m = std::ceil(-(capacity * std::log(fp) / ln2 / ln2));
-	std::cout << m << std::endl;
+    std::cout << m << std::endl;
     auto frac = static_cast<double>(m) / static_cast<double>(capacity);
     size_t k = std::ceil(frac * std::log(2));
-	std::cout << k << std::endl;
+    std::cout << k << std::endl;
 
     data_->insert(
-        bf_pair(id, bf::shm_bloom_filter(get_allocator(), m
-			, k, seed)));
+        bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k, seed)));
     return f - segment_.get_free_memory();
 }
 

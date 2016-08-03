@@ -36,10 +36,10 @@ typedef boost::interprocess::allocator<hash_function, segment_manager_t>
 class hasher {
    public:
     hasher(size_t k, const void_allocator &void_alloc, size_t seed);
-
     std::vector<digest> operator()(char *data, int size) const;
 
    private:
+    // Each hash function occupies 72KB
     std::vector<hash_function, hash_fn_allocator> fns_;
 };
 

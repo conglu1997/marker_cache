@@ -41,9 +41,10 @@ int main() {
     auto falsepos = 0;
     static_assert(sizeof(char) == 1, "Chars used are the correct size.");
 
-    cout << "Object occupies "
-         << m.create(1, test_fprate, test_size, 0) << " bytes."
-         << endl;
+    cout << "Object occupies " << m.create(1, test_fprate, test_size, 0)
+         << " bytes." << endl;
+
+	m.insert_into(1, "stuffadd", 8);
 
     cout << "Priming test data:" << endl;
 

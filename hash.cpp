@@ -1,6 +1,5 @@
 #include "hash.h"
 #include <cassert>
-#include <iostream>
 
 namespace bf {
 
