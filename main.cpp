@@ -35,7 +35,7 @@ int main() {
     auto bytes_allocated = 100000000;
     marker_cache m(bytes_allocated);  // bytes -- on the order of 100MB
 
-    auto test_size = 1000000;  // 1 million
+    auto test_size = 5000000;  // 1 million
     auto test_fprate = 0.001;  // 1 in 1 thousand
     auto test_width = 8;       // 8 byte char[]
     auto falsepos = 0;

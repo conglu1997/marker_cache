@@ -6,9 +6,7 @@ namespace bf {
 
 shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc, size_t m,
                                    size_t k, size_t seed)
-    : bits_(void_alloc), hasher_(k, void_alloc, seed) {
-    bits_.resize(m);
-}
+    : bits_(m, void_alloc), hasher_(k, void_alloc, seed) {}
 
 shm_bloom_filter::shm_bloom_filter(shm_bloom_filter &&other)
     : hasher_(std::move(other.hasher_)), bits_(std::move(other.bits_)) {}

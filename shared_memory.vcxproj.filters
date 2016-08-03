@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="hash.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="shm_bloom_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -27,18 +24,21 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="h3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shm_bloom_filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="marker_cache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
