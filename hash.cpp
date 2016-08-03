@@ -1,13 +1,14 @@
 #include "hash.h"
 #include <cassert>
+#include <iostream>
 
 namespace bf {
 
 default_hash_function::default_hash_function(size_t seed) : h3_(seed) {}
 
 size_t default_hash_function::operator()(char *data, int size) const {
-    // Current max is 36 bytes
-    if (size > max_obj_size) throw std::runtime_error("object too large");
+    // Current max is 36 bytes - settable in hash.h	
+    if (size > max_obj_size) throw std::runtime_error("Object too large!");
     return size == 0 ? 0 : h3_(data, size);
 }
 
