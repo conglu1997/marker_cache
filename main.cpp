@@ -20,7 +20,7 @@ vector<char*> generate_test_data(size_t num_elems, size_t width) {
     std::default_random_engine rng(std::random_device{}());
     std::uniform_int_distribution<int> distribution(0, chars.size() - 1);
     for (auto i = 0; i < num_elems; ++i) {
-        auto s = new char[8];
+        auto s = new char[width];
         for (size_t i = 0; i < width; ++i) s[i] = chars[distribution(rng)];
         v.push_back(s);
     }
@@ -31,12 +31,14 @@ vector<char*> generate_test_data(size_t num_elems, size_t width) {
 int main() {
     // Clear shared memory object before creation
     boost::interprocess::shared_memory_object::remove("BFSharedMemory");
-    marker_cache m(100000000);  // bytes -- should be on the order of 100MB
+	auto bytes_allocated = 100000000;
+    marker_cache m(bytes_allocated);  // bytes -- should be on the order of 100MB
 
-    auto test_size = 9000000;  // ten million
+    auto test_size = 10000000;  // ten million
     auto test_fprate = 0.001;   // 1 in 1 thousand
     auto test_width = 8;        // 8 byte char[]
     auto falsepos = 0;
+	static_assert(sizeof(char) == 1, "Chars used are the correct size.");
 
     m.create(1, test_fprate, test_size, 0, false, false);
 

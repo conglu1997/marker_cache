@@ -47,8 +47,10 @@ void shm_bloom_filter::add(char *data, int data_len) {
     }
 }
 
+// Added for completeness, reset a bloom filter
 void shm_bloom_filter::clear() { std::fill(bits_.begin(), bits_.end(), false); }
 
+// These functions are called once creating a bloom filter to determine optimum parameters
 size_t shm_bloom_filter::m(double fp, size_t capacity) {
     auto ln2 = std::log(2);
     // safe casting from doubles to unsigned ints

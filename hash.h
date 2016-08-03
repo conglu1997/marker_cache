@@ -12,7 +12,7 @@ typedef size_t digest;
 /// The hash function type.
 typedef std::function<digest(char *data, int size)> hash_function;
 
-/// A function that hashes an (*, count) pair k times.
+/// A function that hashes a (*, count) pair *k* times.
 typedef std::function<std::vector<digest>(char *data, int size)> hasher;
 
 class default_hash_function {
@@ -27,7 +27,7 @@ class default_hash_function {
     h3<size_t, max_obj_size> h3_;
 };
 
-/// A hasher which hashes an object *k* times.
+/// A hasher which hashes a (*, count) pair *k* times.
 class default_hasher {
    public:
     default_hasher(std::vector<hash_function> fns);
@@ -38,7 +38,8 @@ class default_hasher {
     std::vector<hash_function> fns_;
 };
 
-/// A hasher which hashes an object two times and generates *k* digests through
+/// A hasher which hashes a (*, count) pair two times and generates *k* digests
+/// through
 /// a linear combinations of the two digests.
 class double_hasher {
    public:
