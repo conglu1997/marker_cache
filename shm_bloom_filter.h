@@ -39,13 +39,6 @@ class shm_bloom_filter {
     bitset bits_;
 };
 
-typedef std::pair<const int, shm_bloom_filter> bf_pair;
-typedef boost::interprocess::allocator<bf_pair, segment_manager_t>
-    bf_pair_allocator;
-typedef boost::interprocess::map<int, shm_bloom_filter, std::less<int>,
-                                 bf_pair_allocator>
-    id_bf_map;
-
 }  // namespace bf
 
 #endif

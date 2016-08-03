@@ -2,10 +2,19 @@
 #define MARKER_CACHE_H
 #include "shm_bloom_filter.h"
 
-typedef int bloom_filter_id;
-// Suitable identification scheme for subtable division here
-
 class marker_cache {
+    typedef std::pair<const int, bf::shm_bloom_filter> bf_pair;
+    typedef boost::interprocess::allocator<bf_pair, bf::segment_manager_t>
+        bf_pair_allocator;
+    typedef boost::interprocess::map<int, bf::shm_bloom_filter, std::less<int>,
+                                     bf_pair_allocator>
+        id_bf_map;
+
+    // Suitable identification scheme for subtable division here
+    // To replace the id scheme, simply change this typedef and provide a
+    // comparator for the map
+    typedef int bloom_filter_id;
+
     // API for managing shared memory and retrieving handles to data
     // Takes identifier of the bloom filter (per subtable, per marker type)
     // For our purposes, identifier is just the marker type (int32)
@@ -27,7 +36,7 @@ class marker_cache {
 
    private:
     boost::interprocess::managed_shared_memory segment_;
-    bf::id_bf_map *data_;
+    id_bf_map *data_;
     bf::void_allocator get_allocator();
 };
 

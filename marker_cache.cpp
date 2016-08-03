@@ -4,7 +4,7 @@
 marker_cache::marker_cache(size_t bytes)
     : segment_(boost::interprocess::open_or_create, "BFSharedMemory", bytes) {
 	
-    data_ = segment_.find_or_construct<bf::id_bf_map>("MarkerCache")(std::less<int>(),
+    data_ = segment_.find_or_construct<id_bf_map>("MarkerCache")(std::less<int>(),
                                                              get_allocator());
 	assert(segment_.find<bf::id_bf_map>("MarkerCache").first != 0);
 }
@@ -18,7 +18,7 @@ void marker_cache::create(const bloom_filter_id id, double fp, size_t capacity, 
                           bool double_hashing, bool partition) {
 	auto f = segment_.get_free_memory();
     data_->insert(
-        bf::bf_pair(id, bf::shm_bloom_filter(get_allocator(), fp, capacity,
+        bf_pair(id, bf::shm_bloom_filter(get_allocator(), fp, capacity,
                                              seed, double_hashing, partition)));
 	std::cout << "Object occupies " << f - segment_.get_free_memory() << " bytes." << std::endl;
 }
