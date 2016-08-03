@@ -1,14 +1,14 @@
 #include "marker_cache.h"
 
-marker_cache::marker_cache(size_t bytes, boost::interprocess::create_only_t c)
-    : segment_(c, "BFSharedMemory", bytes), owner_(true) {
+marker_cache::marker_cache(size_t bytes)
+    : segment_(boost::interprocess::create_only, "BFSharedMemory", bytes), owner_(true) {
     data_ = segment_.construct<id_bf_map>("MarkerCache")(std::less<int>(),
                                                          get_allocator());
     assert(segment_.find<bf::id_bf_map>("MarkerCache").first != 0);
 }
 
-marker_cache::marker_cache(boost::interprocess::open_read_only_t o)
-    : segment_(o, "BFSharedMemory"), owner_(false) {
+marker_cache::marker_cache()
+    : segment_(boost::interprocess::open_read_only, "BFSharedMemory"), owner_(false) {
     data_ = segment_.find<id_bf_map>("MarkerCache").first;
     assert(data_ != NULL);
 }
@@ -28,10 +28,8 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
     // Work out optimum parameters
     auto ln2 = std::log(2);
     size_t m = std::ceil(-(capacity * std::log(fp) / ln2 / ln2));
-    std::cout << m << std::endl;
     auto frac = static_cast<double>(m) / static_cast<double>(capacity);
     size_t k = std::ceil(frac * std::log(2));
-    std::cout << k << std::endl;
 
     data_->insert(
         bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k, seed)));

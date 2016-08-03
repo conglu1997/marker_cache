@@ -21,13 +21,12 @@ class marker_cache {
     // For our purposes, identifier is just the marker type (int32)
    public:
     // max 4.2 billion bytes (unsigned integer)
-    // Create memory only if bytes specified
-    marker_cache(size_t bytes, boost::interprocess::create_only_t c =
-                                   boost::interprocess::create_only);
+    // Create memory only if bytes specified, owner process
+    marker_cache(size_t bytes);
 
-    // Throws an exception if the memory is not active
-    marker_cache(boost::interprocess::open_read_only_t o =
-                     boost::interprocess::open_read_only);
+    // Throws an exception if the memory is not active, reading process
+    marker_cache();
+
     ~marker_cache();
     // Create new cache, size bits, fp false-positive rate
     // max 4.2 billion items, returns the bytes it uses
