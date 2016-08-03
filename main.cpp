@@ -37,12 +37,14 @@ int main() {
         bytes_allocated);  // bytes -- should be on the order of 100MB
 
     auto test_size = 1000000;  // million
-    auto test_fprate = 0.001;   // 1 in 1 thousand
-    auto test_width = 8;        // 8 byte char[]
+    auto test_fprate = 0.001;  // 1 in 1 thousand
+    auto test_width = 8;       // 8 byte char[]
     auto falsepos = 0;
     static_assert(sizeof(char) == 1, "Chars used are the correct size.");
 
-	std::cout << "Object occupies " << m.create(1, test_fprate, test_size, 0, false, false) << " bytes." << std::endl;
+    std::cout << "Object occupies "
+              << m.create(1, test_fprate, test_size, 0, false, false)
+              << " bytes." << std::endl;
 
     cout << "Priming test data:" << endl;
 
