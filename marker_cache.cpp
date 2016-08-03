@@ -7,7 +7,7 @@ marker_cache::marker_cache(size_t bytes, boost::interprocess::create_only_t c)
     assert(segment_.find<bf::id_bf_map>("MarkerCache").first != 0);
 }
 
-marker_cache::marker_cache(size_t bytes, boost::interprocess::open_read_only_t o)
+marker_cache::marker_cache(boost::interprocess::open_read_only_t o)
 	: segment_(o, "BFSharedMemory"), owner_(false) {
 	data_ = segment_.find<id_bf_map>("MarkerCache").first;
 	assert(data_ != NULL);

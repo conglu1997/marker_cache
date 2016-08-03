@@ -21,9 +21,13 @@ class marker_cache {
     // For our purposes, identifier is just the marker type (int32)
    public:
     // max 4.2 billion bytes (unsigned integer)
-	// By default we create the memory, SD will take map the memory for read-only
-    marker_cache(size_t bytes, boost::interprocess::create_only_t c = boost::interprocess::create_only);
-	marker_cache(size_t bytes, boost::interprocess::open_read_only_t o);
+    // Create memory only if bytes specified
+    marker_cache(size_t bytes, boost::interprocess::create_only_t c =
+                                   boost::interprocess::create_only);
+
+    // Throws an exception if the memory is not active
+    marker_cache(boost::interprocess::open_read_only_t o =
+                     boost::interprocess::open_read_only);
     ~marker_cache();
     // Create new cache, size bits, fp false-positive rate
     // max 4.2 billion items, returns the bytes it uses
@@ -31,15 +35,15 @@ class marker_cache {
                   size_t seed = 0, bool double_hashing = true,
                   bool partition = true);
 
-	// Check if a bloom filter exists with this id
-	bool exists(marker_cache_id id);
+    // Check if a bloom filter exists with this id
+    bool exists(marker_cache_id id);
 
     // data_len is num of chars (bytes)
     bool lookup_from(marker_cache_id id, char *data, int data_len) const;
 
     void insert_into(marker_cache_id id, char *data, int data_len);
 
-	// Remove a bloom filter
+    // Remove a bloom filter
     void remove(marker_cache_id id);
 
    private:
