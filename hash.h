@@ -62,7 +62,7 @@ typedef boost::interprocess::allocator<hash_function, segment_manager_t>
 /// A hasher which hashes a (*, count) pair *k* times.
 class hasher {
    public:
-    hasher(size_t k, const void_allocator &void_alloc, size_t seed);
+    hasher(size_t k, const void_allocator &void_alloc);
     std::vector<digest> operator()(char *data, int size) const;
 
    private:

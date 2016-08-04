@@ -35,8 +35,7 @@ class marker_cache {
 
     // Create new cache, size bits, fp false-positive rate
     // returns the number of bytes occupied by the new bloom filters
-    size_t create(marker_cache_id id, double fp, size_t capacity,
-                  size_t seed = 0);
+    size_t create(marker_cache_id id, double fp, size_t capacity);
 
     // Check if a bloom filter exists with this id
     bool exists(marker_cache_id id) const;

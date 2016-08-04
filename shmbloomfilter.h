@@ -40,7 +40,7 @@ typedef std::vector<bool, bool_allocator> bitset;
 class shm_bloom_filter {
    public:
     shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc,
-                                       size_t m, size_t k, size_t seed);
+                                       size_t m, size_t k);
 
     bool lookup(char *data, int data_len) const;
     void insert(char *data, int data_len);

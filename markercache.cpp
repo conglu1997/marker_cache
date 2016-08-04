@@ -23,7 +23,7 @@ marker_cache::~marker_cache() {
 }
 
 size_t marker_cache::create(const marker_cache_id id, double fp,
-                            size_t capacity, size_t seed) {
+                            size_t capacity) {
     // Throws if a read-only trys to create a bloom filter
     auto f = segment_.get_free_memory();
 
@@ -37,8 +37,7 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
     // k = (m/n)*ln2
     size_t k = std::ceil(frac * ln2);
 
-    data_->insert(
-        bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k, seed)));
+    data_->insert(bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k)));
     return f - segment_.get_free_memory();
 }
 

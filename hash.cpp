@@ -37,10 +37,11 @@ size_t hash_function::operator()(char *data, int size) const {
     return size == 0 ? 0 : h3_(data, size);
 }
 
-hasher::hasher(size_t k, const void_allocator &void_alloc, size_t seed)
+hasher::hasher(size_t k, const void_allocator &void_alloc)
     : fns_(void_alloc) {
     assert(k > 0);
-    std::minstd_rand0 prng(seed);
+	// Seed a LCG with 0 and use this to seed the hash functions
+    std::minstd_rand0 prng(0);
 	fns_.reserve(k);
     for (size_t i = 0; i < k; ++i) fns_.emplace_back(prng());
 }
