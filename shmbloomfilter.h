@@ -34,7 +34,6 @@ namespace bf {
 
 typedef boost::interprocess::allocator<bool, segment_manager_t> bool_allocator;
 // Use the vector<bool> 1-bit per bool optimisation
-// May want to consider boost::dynamic_bitset as well
 typedef std::vector<bool, bool_allocator> bitset;
 
 class shm_bloom_filter {
@@ -44,6 +43,8 @@ class shm_bloom_filter {
 
     bool lookup(char *data, int data_len) const;
     void insert(char *data, int data_len);
+
+	// Reset the bloom filter
     void clear();
 
    private:

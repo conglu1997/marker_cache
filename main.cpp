@@ -41,6 +41,7 @@ int main() {
     auto falsepos = 0;
     static_assert(sizeof(char) == 1, "Chars used are the correct size.");
 
+	// Create a bloom filter with id 1
     cout << "Object occupies " << m.create(1, test_fprate, test_size)
          << " bytes." << endl;
 
@@ -81,7 +82,7 @@ int main() {
     begin = chrono::steady_clock::now();
 
     for (auto str : v2) {
-        if (m.lookup_from(1, str, 8)) {
+        if (m.lookup_from(1, str, test_width)) {
             falsepos++;
         }
     }
