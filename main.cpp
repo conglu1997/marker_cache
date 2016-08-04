@@ -3,7 +3,7 @@
 #include <random>
 #include <string>
 #include <vector>
-#include "marker_cache.h"
+#include "markercache.h"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ vector<char*> generate_test_data(size_t num_elems, size_t width) {
         "!@#$%^&*()"
         "`~-_=+[{]}\\|;:'\",<.>/? ");
     default_random_engine rng(random_device{}());
-    uniform_int_distribution<int> distribution(0, chars.size() - 1);
+    uniform_int_distribution<size_t> distribution(0, chars.size() - 1);
     for (auto i = 0; i < num_elems; ++i) {
         auto s = new char[width];
         for (size_t i = 0; i < width; ++i) s[i] = chars[distribution(rng)];
