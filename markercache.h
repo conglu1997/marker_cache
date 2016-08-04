@@ -27,9 +27,11 @@ class marker_cache {
     marker_cache();
 
     ~marker_cache();
-    // Forbid copy construction, move construction is automatically disabled
+    // Forbid copy and move construction
     marker_cache(marker_cache const &) = delete;
     marker_cache &operator=(marker_cache const &) = delete;
+    marker_cache(marker_cache &&) = delete;
+    marker_cache &operator=(marker_cache &&) = delete;
 
     // Create new cache, size bits, fp false-positive rate
     // returns the number of bytes occupied by the new bloom filters
