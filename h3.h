@@ -27,7 +27,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef BF_H3_H
 #define BF_H3_H
 
-#include <limits>
 #include <stdlib.h>
 
 namespace bf {
@@ -35,10 +34,10 @@ namespace bf {
 class lcg {
    public:
     lcg(size_t seed) : seed_(seed) {
-		if (seed == 0) {
-			seed_ = 16807;
-		}
-	}
+        if (seed == 0) {
+            seed_ = 16807;
+        }
+    }
     size_t operator()() {
         seed_ = seed_ * 16807 % 2147483647;
         return seed_;
@@ -51,12 +50,10 @@ class lcg {
 /// An implementation of the H3 hash function family.
 template <typename T, int N>
 class h3 {
-    static size_t const bits_per_byte =
-        std::numeric_limits<unsigned char>::digits;
+    const static size_t bits_per_byte = 8;
 
    public:
-    const static size_t byte_range =
-        std::numeric_limits<unsigned char>::max() + 1;
+    const static size_t byte_range = 256;
 
     h3(T seed = 0) {
         T bits[N * bits_per_byte];
@@ -76,7 +73,7 @@ class h3 {
             }
     }
 
-    T operator()(char const* data, size_t size, size_t offset = 0) const {
+    T operator()(char const *data, size_t size, size_t offset = 0) const {
         T result = 0;
         // Duff's Device.
         unsigned long long n = (size + 7) / 8;

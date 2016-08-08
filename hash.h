@@ -28,9 +28,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #define BF_HASH_POLICY_H
 
 #define BOOST_DATE_TIME_NO_LIB
+#include <h3.h>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
-#include "h3.h"
 
 namespace bf {
 

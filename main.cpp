@@ -1,9 +1,11 @@
-#include <boost/chrono.hpp>
+// This code contains some C++11 used to test the C++03 code.
+
+#include <markercache.h>
+#include <chrono>
 #include <iostream>
 #include <random>
 #include <string>
 #include <vector>
-#include "markercache.h"
 
 using namespace std;
 
@@ -34,14 +36,11 @@ vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
 }
 
 int main() {
-    // Clear shared memory object if it exists before creation, this will not be
-    // done on the search director side
-    boost::interprocess::shared_memory_object::remove("BFSharedMemory");
-    size_t bytes_allocated = 100000000;
+    size_t bytes_allocated = 10000000;
     marker_cache m(bytes_allocated);  // bytes -- on the order of 100MB
 
     size_t test_size = 1000000;  // 1 million
-    double test_fprate = 0.01;   // 1 in 1
+    double test_fprate = 0.001;  // 1 in 1
     size_t min_test_width = 8;
     size_t max_test_width = 16;
     size_t falsepos = 0;
@@ -60,44 +59,39 @@ int main() {
 
     cout << "Test data generated." << endl;
 
-    boost::chrono::time_point<boost::chrono::steady_clock> begin =
-        boost::chrono::steady_clock::now();
+    chrono::time_point<chrono::steady_clock> begin =
+        chrono::steady_clock::now();
 
     for (vector<pair<char*, int>>::const_iterator i = v.begin(); i != v.end();
          ++i)
         m.insert_into(1, i->first, i->second);
 
-    boost::chrono::time_point<boost::chrono::steady_clock> end =
-        boost::chrono::steady_clock::now();
+    chrono::time_point<chrono::steady_clock> end = chrono::steady_clock::now();
 
     cout << "Finished " << test_size << " inserts in "
-         << boost::chrono::duration_cast<boost::chrono::milliseconds>(end -
-                                                                      begin)
-                .count()
+         << chrono::duration_cast<chrono::milliseconds>(end - begin).count()
          << " milliseconds." << endl;
 
-    begin = boost::chrono::steady_clock::now();
+    begin = chrono::steady_clock::now();
 
     for (vector<pair<char*, int>>::const_iterator i = v.cbegin(); i != v.cend();
          ++i) {
         if (m.lookup_from(1, i->first, i->second) == 0) {
             cout << "WRONG - ABORT ABORT" << endl;
-            // Something horribly wrong has gone on here, bloom filter error
+            // Something horribly wrong has gone on here, Bloom filter error
         }
     }
 
-    end = boost::chrono::steady_clock::now();
+    end = chrono::steady_clock::now();
 
     cout << "Finished " << test_size << " checks in "
-         << boost::chrono::duration_cast<boost::chrono::milliseconds>(end -
-                                                                      begin)
-                .count()
+         << chrono::duration_cast<chrono::milliseconds>(end - begin).count()
          << " milliseconds." << endl;
 
     for (vector<pair<char*, int>>::iterator i = v.begin(); i != v.end(); ++i)
         delete i->first;
 
-    begin = boost::chrono::steady_clock::now();
+    begin = chrono::steady_clock::now();
 
     for (vector<pair<char*, int>>::const_iterator i = v2.cbegin();
          i != v2.cend(); ++i) {
@@ -106,12 +100,10 @@ int main() {
         }
     }
 
-    end = boost::chrono::steady_clock::now();
+    end = chrono::steady_clock::now();
 
     cout << "Finished " << test_size << " false positive checks in "
-         << boost::chrono::duration_cast<boost::chrono::milliseconds>(end -
-                                                                      begin)
-                .count()
+         << chrono::duration_cast<chrono::milliseconds>(end - begin).count()
          << " milliseconds. Observed fp rate: "
          << (double)falsepos / (double)test_size
          << ", Desired fp rate: " << test_fprate << endl;

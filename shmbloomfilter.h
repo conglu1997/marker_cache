@@ -27,8 +27,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef BF_BLOOM_FILTER_SHM_H
 #define BF_BLOOM_FILTER_SHM_H
 
+#include <hash.h>
 #include <boost/interprocess/containers/map.hpp>
-#include "hash.h"
 
 namespace bf {
 
@@ -38,13 +38,12 @@ typedef std::vector<bool, bool_allocator> bitset;
 
 class shm_bloom_filter {
    public:
-    shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc,
-                                       size_t m, size_t k);
+    shm_bloom_filter(const void_allocator &void_alloc, size_t m, size_t k);
 
     bool lookup(char *data, int data_len) const;
     void insert(char *data, int data_len);
 
-	// Reset the bloom filter
+    // Reset the bloom filter
     void clear();
 
    private:

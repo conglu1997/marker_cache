@@ -1,11 +1,12 @@
 #ifndef MARKER_CACHE_H
 #define MARKER_CACHE_H
-#include "shmbloomfilter.h"
+#include <shmbloomfilter.h>
 
 class marker_cache {
     // Suitable identification scheme for subtable division here
     // To replace the id scheme, simply change this typedef and provide a
     // comparator for the map, currently std::less<int>
+	
     typedef int marker_cache_id;
     typedef std::less<int> id_comparator;
 
@@ -52,7 +53,7 @@ class marker_cache {
     void erase();
 
    private:
-    boost::interprocess::managed_shared_memory segment_;
+    boost::interprocess::managed_shared_memory* segment_;
     id_bf_map *data_;
     bf::void_allocator get_allocator();
     bool owner_;

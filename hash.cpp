@@ -24,8 +24,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 **/
 
-#include "hash.h"
 #include <assert.h>
+#include <hash.h>
 
 namespace bf {
 
@@ -37,12 +37,11 @@ size_t hash_function::operator()(char *data, int size) const {
     return size == 0 ? 0 : h3_(data, size);
 }
 
-hasher::hasher(size_t k, const void_allocator &void_alloc)
-    : fns_(void_alloc) {
+hasher::hasher(size_t k, const void_allocator &void_alloc) : fns_(void_alloc) {
     assert(k > 0);
-	// Seed a LCG with 0 and use this to seed the hash functions
-	lcg l(0);
-	fns_.reserve(k);
+    // Seed a LCG with 0 and use this to seed the hash functions
+    lcg l(0);
+    fns_.reserve(k);
     for (size_t i = 0; i < k; ++i) fns_.push_back(l());
 }
 

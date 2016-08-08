@@ -24,9 +24,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 **/
 
-#include "shmbloomfilter.h"
-#include <assert.h>
-#include <math.h>
+#include <shmbloomfilter.h>
 
 namespace bf {
 
@@ -35,8 +33,8 @@ shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc, size_t m,
     : bits_(m, void_alloc), hasher_(k, void_alloc) {}
 
 bool shm_bloom_filter::lookup(char *data, int data_len) const {
-    std::vector<bf::digest> digests = hasher_(data, data_len);
-    for (std::vector<bf::digest>::const_iterator i = digests.cbegin();
+    std::vector<digest> digests = hasher_(data, data_len);
+    for (std::vector<digest>::const_iterator i = digests.cbegin();
          i != digests.cend(); ++i) {
         if (!bits_[*i % bits_.size()]) return false;
     }
@@ -44,9 +42,9 @@ bool shm_bloom_filter::lookup(char *data, int data_len) const {
 }
 
 void shm_bloom_filter::insert(char *data, int data_len) {
-    std::vector<bf::digest> digests = hasher_(data, data_len);
-    for (std::vector<bf::digest>::iterator i = digests.begin();
-         i != digests.end(); ++i) {
+    std::vector<digest> digests = hasher_(data, data_len);
+    for (std::vector<digest>::iterator i = digests.begin(); i != digests.end();
+         ++i) {
         bits_[*i % bits_.size()] = true;
     }
 }

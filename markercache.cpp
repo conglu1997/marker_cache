@@ -1,17 +1,22 @@
-#include "markercache.h"
+#include <markercache.h>
 
-marker_cache::marker_cache(size_t bytes)
-    : segment_(boost::interprocess::create_only, "BFSharedMemory", bytes),
-      owner_(true) {
-    data_ = segment_.construct<id_bf_map>("MarkerCache")(std::less<int>(),
-                                                         get_allocator());
+marker_cache::marker_cache(size_t bytes) : owner_(true) {
+    // Clear shared memory object if it exists before creation
+    boost::interprocess::shared_memory_object::remove("BFSharedMemory");
+
+    segment_ = new boost::interprocess::managed_shared_memory(
+        boost::interprocess::create_only, "BFSharedMemory", bytes);
+
+    data_ = segment_->construct<id_bf_map>("MarkerCache")(std::less<int>(),
+                                                          get_allocator());
     assert(segment_.find<id_bf_map>("MarkerCache").first != NULL);
 }
 
-marker_cache::marker_cache()
-    : segment_(boost::interprocess::open_read_only, "BFSharedMemory"),
-      owner_(false) {
-    data_ = segment_.find<id_bf_map>("MarkerCache").first;
+marker_cache::marker_cache() : owner_(false) {
+    segment_ = new boost::interprocess::managed_shared_memory(
+        boost::interprocess::open_read_only, "BFSharedMemory");
+
+    data_ = segment_->find<id_bf_map>("MarkerCache").first;
     assert(data_ != NULL);
 }
 
@@ -20,12 +25,13 @@ marker_cache::~marker_cache() {
     if (owner_) {
         boost::interprocess::shared_memory_object::remove("BFSharedMemory");
     }
+    delete segment_;
 }
 
 size_t marker_cache::create(const marker_cache_id id, double fp,
                             size_t capacity) {
     // Throws if a read-only trys to create a bloom filter
-    long long f = segment_.get_free_memory();
+    long long f = segment_->get_free_memory();
 
     // Work out optimum parameters
     double ln2 = std::log(2);
@@ -38,7 +44,7 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
     size_t k = std::ceil(frac * ln2);
 
     data_->insert(bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k)));
-    return f - segment_.get_free_memory();
+    return f - segment_->get_free_memory();
 }
 
 bool marker_cache::exists(marker_cache_id id) const {
@@ -74,5 +80,5 @@ void marker_cache::erase() {
 }
 
 bf::void_allocator marker_cache::get_allocator() {
-    return segment_.get_segment_manager();
+    return segment_->get_segment_manager();
 }
