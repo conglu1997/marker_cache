@@ -78,7 +78,7 @@ int main() {
 
     begin = boost::chrono::steady_clock::now();
 
-    for (vector<pair<char*, int>>::const_iterator i = v.begin(); i != v.end();
+    for (vector<pair<char*, int>>::const_iterator i = v.cbegin(); i != v.cend();
          ++i) {
         if (m.lookup_from(1, i->first, i->second) == 0) {
             cout << "WRONG - ABORT ABORT" << endl;
@@ -94,14 +94,13 @@ int main() {
                 .count()
          << " milliseconds." << endl;
 
-    for (vector<pair<char*, int>>::const_iterator i = v.begin(); i != v.end();
-         ++i)
+    for (vector<pair<char*, int>>::iterator i = v.begin(); i != v.end(); ++i)
         delete i->first;
 
     begin = boost::chrono::steady_clock::now();
 
-    for (vector<pair<char*, int>>::const_iterator i = v2.begin(); i != v2.end();
-         ++i) {
+    for (vector<pair<char*, int>>::const_iterator i = v2.cbegin();
+         i != v2.cend(); ++i) {
         if (m.lookup_from(1, i->first, i->second)) {
             ++falsepos;
         }
@@ -117,8 +116,7 @@ int main() {
          << (double)falsepos / (double)test_size
          << ", Desired fp rate: " << test_fprate << endl;
 
-    for (vector<pair<char*, int>>::const_iterator i = v2.begin(); i != v2.end();
-         ++i)
+    for (vector<pair<char*, int>>::iterator i = v2.begin(); i != v2.end(); ++i)
         delete i->first;
 
     cin.get();

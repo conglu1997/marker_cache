@@ -45,8 +45,8 @@ bool shm_bloom_filter::lookup(char *data, int data_len) const {
 
 void shm_bloom_filter::insert(char *data, int data_len) {
     std::vector<bf::digest> digests = hasher_(data, data_len);
-    for (std::vector<bf::digest>::const_iterator i = digests.cbegin();
-         i != digests.cend(); ++i) {
+    for (std::vector<bf::digest>::iterator i = digests.begin();
+         i != digests.end(); ++i) {
         bits_[*i % bits_.size()] = true;
     }
 }

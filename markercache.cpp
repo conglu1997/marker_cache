@@ -68,7 +68,7 @@ void marker_cache::remove(marker_cache_id id) {
 }
 
 void marker_cache::erase() {
-    for (id_bf_map::const_iterator it = data_->cbegin(); it != data_->cend();) {
+    for (id_bf_map::iterator it = data_->begin(); it != data_->end();) {
         data_->erase(it++);
     }
 }

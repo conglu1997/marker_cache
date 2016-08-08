@@ -55,7 +55,7 @@ class h3 {
         std::numeric_limits<unsigned char>::digits;
 
    public:
-    constexpr static size_t byte_range =
+    const static size_t byte_range =
         std::numeric_limits<unsigned char>::max() + 1;
 
     h3(T seed = 0) {
