@@ -5,7 +5,7 @@ marker_cache::marker_cache(size_t bytes)
       owner_(true) {
     data_ = segment_.construct<id_bf_map>("MarkerCache")(std::less<int>(),
                                                          get_allocator());
-    assert(segment_.find<bf::id_bf_map>("MarkerCache").first != NULL);
+    assert(segment_.find<id_bf_map>("MarkerCache").first != NULL);
 }
 
 marker_cache::marker_cache()
@@ -25,14 +25,14 @@ marker_cache::~marker_cache() {
 size_t marker_cache::create(const marker_cache_id id, double fp,
                             size_t capacity) {
     // Throws if a read-only trys to create a bloom filter
-    auto f = segment_.get_free_memory();
+    long long f = segment_.get_free_memory();
 
     // Work out optimum parameters
-    auto ln2 = std::log(2);
+    double ln2 = std::log(2);
     // Num. bits - https://en.wikipedia.org/wiki/Bloom_filter
     // m = -(nln(p))/(ln2^2) where n = num objects, p = false pos rate
     size_t m = std::ceil(-(((capacity * std::log(fp)) / ln2) / ln2));
-    auto frac = static_cast<double>(m) / static_cast<double>(capacity);
+    double frac = (double)m / (double)capacity;
     // Num. hash functions
     // k = (m/n)*ln2
     size_t k = std::ceil(frac * ln2);
@@ -68,7 +68,7 @@ void marker_cache::remove(marker_cache_id id) {
 }
 
 void marker_cache::erase() {
-    for (auto it = data_->cbegin(); it != data_->cend();) {
+    for (id_bf_map::const_iterator it = data_->cbegin(); it != data_->cend();) {
         data_->erase(it++);
     }
 }

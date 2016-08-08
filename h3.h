@@ -28,9 +28,25 @@ POSSIBILITY OF SUCH DAMAGE.
 #define BF_H3_H
 
 #include <limits>
-#include <random>
+#include <stdlib.h>
 
 namespace bf {
+
+class lcg {
+   public:
+    lcg(size_t seed) : seed_(seed) {
+		if (seed == 0) {
+			seed_ = 16807;
+		}
+	}
+    size_t operator()() {
+        seed_ = seed_ * 16807 % 2147483647;
+        return seed_;
+    }
+
+   private:
+    size_t seed_;
+};
 
 /// An implementation of the H3 hash function family.
 template <typename T, int N>
@@ -44,45 +60,44 @@ class h3 {
 
     h3(T seed = 0) {
         T bits[N * bits_per_byte];
-        std::minstd_rand0 prng(seed);
-        for (auto bit = 0; bit < N * bits_per_byte; ++bit) {
+        lcg l(seed);
+        for (int bit = 0; bit < N * bits_per_byte; ++bit) {
             bits[bit] = 0;
-            for (auto i = 0; i < sizeof(T) / 2; i++)
-                bits[bit] = (bits[bit] << 16) | (prng() & 0xFFFF);
+            for (int i = 0; i < sizeof(T) / 2; i++)
+                bits[bit] = (bits[bit] << 16) | (l() & 0xFFFF);
         }
 
-        for (auto byte = 0; byte < N; ++byte)
-            for (auto val = 0; val < byte_range; ++val) {
+        for (int byte = 0; byte < N; ++byte)
+            for (int val = 0; val < byte_range; ++val) {
                 bytes_[byte][val] = 0;
-                for (auto bit = 0; bit < bits_per_byte; ++bit)
+                for (int bit = 0; bit < bits_per_byte; ++bit)
                     if (val & (1 << bit))
                         bytes_[byte][val] ^= bits[byte * bits_per_byte + bit];
             }
     }
 
-    T operator()(void const* data, size_t size, size_t offset = 0) const {
-        auto* p = static_cast<unsigned char const*>(data);
+    T operator()(char const* data, size_t size, size_t offset = 0) const {
         T result = 0;
         // Duff's Device.
-        auto n = (size + 7) / 8;
+        unsigned long long n = (size + 7) / 8;
         switch (size % 8) {
             case 0:
                 do {
-                    result ^= bytes_[offset++][*p++];
+                    result ^= bytes_[offset++][*data++];
                     case 7:
-                        result ^= bytes_[offset++][*p++];
+                        result ^= bytes_[offset++][*data++];
                     case 6:
-                        result ^= bytes_[offset++][*p++];
+                        result ^= bytes_[offset++][*data++];
                     case 5:
-                        result ^= bytes_[offset++][*p++];
+                        result ^= bytes_[offset++][*data++];
                     case 4:
-                        result ^= bytes_[offset++][*p++];
+                        result ^= bytes_[offset++][*data++];
                     case 3:
-                        result ^= bytes_[offset++][*p++];
+                        result ^= bytes_[offset++][*data++];
                     case 2:
-                        result ^= bytes_[offset++][*p++];
+                        result ^= bytes_[offset++][*data++];
                     case 1:
-                        result ^= bytes_[offset++][*p++];
+                        result ^= bytes_[offset++][*data++];
                 } while (--n > 0);
         }
         return result;

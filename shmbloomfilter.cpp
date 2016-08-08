@@ -25,8 +25,8 @@ POSSIBILITY OF SUCH DAMAGE.
 **/
 
 #include "shmbloomfilter.h"
-#include <cassert>
-#include <cmath>
+#include <assert.h>
+#include <math.h>
 
 namespace bf {
 
@@ -35,15 +35,20 @@ shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc, size_t m,
     : bits_(m, void_alloc), hasher_(k, void_alloc) {}
 
 bool shm_bloom_filter::lookup(char *data, int data_len) const {
-    auto digests = hasher_(data, data_len);
-    for (auto d : digests)
-        if (!bits_[d % bits_.size()]) return false;
+    std::vector<bf::digest> digests = hasher_(data, data_len);
+    for (std::vector<bf::digest>::const_iterator i = digests.cbegin();
+         i != digests.cend(); ++i) {
+        if (!bits_[*i % bits_.size()]) return false;
+    }
     return true;
 }
 
 void shm_bloom_filter::insert(char *data, int data_len) {
-    auto digests = hasher_(data, data_len);
-    for (auto d : digests) bits_[d % bits_.size()] = true;
+    std::vector<bf::digest> digests = hasher_(data, data_len);
+    for (std::vector<bf::digest>::const_iterator i = digests.cbegin();
+         i != digests.cend(); ++i) {
+        bits_[*i % bits_.size()] = true;
+    }
 }
 
 void shm_bloom_filter::clear() { std::fill(bits_.begin(), bits_.end(), false); }

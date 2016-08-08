@@ -30,7 +30,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #define BOOST_DATE_TIME_NO_LIB
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
-#include <functional>
 #include "h3.h"
 
 namespace bf {
@@ -46,7 +45,7 @@ typedef boost::interprocess::allocator<void, segment_manager_t> void_allocator;
 class hash_function {
    public:
     // Max object size in bytes that we will receive
-    constexpr static size_t max_obj_size = 36;
+    const static size_t max_obj_size = 36;
 
     hash_function(size_t seed);
 
