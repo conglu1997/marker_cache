@@ -30,7 +30,7 @@ namespace bf {
 
 shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc, size_t m,
                                    size_t k)
-    : bits_(m, void_alloc), hasher_(k, void_alloc) {}
+    : hasher_(k, void_alloc), bits_(m, false, void_alloc) {}
 
 bool shm_bloom_filter::lookup(char *data, int data_len) const {
     std::vector<digest> digests = hasher_(data, data_len);
