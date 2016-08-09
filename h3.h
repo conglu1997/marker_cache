@@ -27,7 +27,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef BF_H3_H
 #define BF_H3_H
 
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace bf {
 
@@ -58,16 +58,16 @@ class h3 {
     h3(T seed = 0) {
         T bits[N * bits_per_byte];
         lcg l(seed);
-        for (int bit = 0; bit < N * bits_per_byte; ++bit) {
+        for (size_t bit = 0; bit < N * bits_per_byte; ++bit) {
             bits[bit] = 0;
-            for (int i = 0; i < sizeof(T) / 2; i++)
+            for (size_t i = 0; i < sizeof(T) / 2; i++)
                 bits[bit] = (bits[bit] << 16) | (l() & 0xFFFF);
         }
 
         for (int byte = 0; byte < N; ++byte)
-            for (int val = 0; val < byte_range; ++val) {
+            for (size_t val = 0; val < byte_range; ++val) {
                 bytes_[byte][val] = 0;
-                for (int bit = 0; bit < bits_per_byte; ++bit)
+                for (size_t bit = 0; bit < bits_per_byte; ++bit)
                     if (val & (1 << bit))
                         bytes_[byte][val] ^= bits[byte * bits_per_byte + bit];
             }
@@ -76,25 +76,26 @@ class h3 {
     T operator()(char const *data, size_t size, size_t offset = 0) const {
         T result = 0;
         // Duff's Device.
+        unsigned char const *p = (unsigned char const *)data;
         unsigned long long n = (size + 7) / 8;
         switch (size % 8) {
             case 0:
                 do {
-                    result ^= bytes_[offset++][*data++];
+                    result ^= bytes_[offset++][*p++];
                     case 7:
-                        result ^= bytes_[offset++][*data++];
+                        result ^= bytes_[offset++][*p++];
                     case 6:
-                        result ^= bytes_[offset++][*data++];
+                        result ^= bytes_[offset++][*p++];
                     case 5:
-                        result ^= bytes_[offset++][*data++];
+                        result ^= bytes_[offset++][*p++];
                     case 4:
-                        result ^= bytes_[offset++][*data++];
+                        result ^= bytes_[offset++][*p++];
                     case 3:
-                        result ^= bytes_[offset++][*data++];
+                        result ^= bytes_[offset++][*p++];
                     case 2:
-                        result ^= bytes_[offset++][*data++];
+                        result ^= bytes_[offset++][*p++];
                     case 1:
-                        result ^= bytes_[offset++][*data++];
+                        result ^= bytes_[offset++][*p++];
                 } while (--n > 0);
         }
         return result;

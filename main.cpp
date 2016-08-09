@@ -36,8 +36,8 @@ vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
 }
 
 int main() {
-    size_t bytes_allocated = 10000000;
-    marker_cache m(bytes_allocated);  // bytes -- on the order of 100MB
+    size_t bytes_allocated = 5395000000;
+    marker_cache m(bytes_allocated);  // 5.02GB
 
     size_t test_size = 1000000;  // 1 million
     double test_fprate = 0.001;  // 1 in 1
