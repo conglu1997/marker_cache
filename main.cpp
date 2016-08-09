@@ -12,7 +12,7 @@ using namespace std;
 // Generate length-8 random strings for testing
 // Need to delete after using test data.
 vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
-                                            size_t max_width, size_t seed) {
+                                            size_t max_width) {
     vector<pair<char*, int>> v;
     string chars(
         "abcdefghijklmnopqrstuvwxyz"
@@ -36,7 +36,7 @@ vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
 }
 
 int main() {
-    size_t bytes_allocated = 10000000;
+    size_t bytes_allocated = 5400000000;
     marker_cache m(bytes_allocated);  // 5.02GB in final for 3 billion at 0.001
 
     size_t test_size = 1000000;
@@ -52,21 +52,17 @@ int main() {
 
     cout << "Priming test data:" << endl;
 
-    vector<pair<char*, int>> v =
-        generate_test_data(test_size, min_test_width, max_test_width, 36);
-    vector<pair<char*, int>> v2 =
-        generate_test_data(test_size, min_test_width, max_test_width, 48);
+    auto v = generate_test_data(test_size, min_test_width, max_test_width);
+    auto v2 = generate_test_data(test_size, min_test_width, max_test_width);
 
     cout << "Test data generated." << endl;
 
-    chrono::time_point<chrono::steady_clock> begin =
-        chrono::steady_clock::now();
+    auto begin = chrono::steady_clock::now();
 
-    for (vector<pair<char*, int>>::const_iterator i = v.begin(); i != v.end();
-         ++i)
+    for (auto i = v.begin(); i != v.end(); ++i)
         m.insert_into(1, i->first, i->second);
 
-    chrono::time_point<chrono::steady_clock> end = chrono::steady_clock::now();
+    auto end = chrono::steady_clock::now();
 
     cout << "Finished " << test_size << " inserts in "
          << chrono::duration_cast<chrono::milliseconds>(end - begin).count()
@@ -74,8 +70,7 @@ int main() {
 
     begin = chrono::steady_clock::now();
 
-    for (vector<pair<char*, int>>::const_iterator i = v.cbegin(); i != v.cend();
-         ++i) {
+    for (auto i = v.cbegin(); i != v.cend(); ++i) {
         if (m.lookup_from(1, i->first, i->second) == 0) {
             cout << "WRONG - ABORT ABORT" << endl;
             // Something horribly wrong has gone on here, Bloom filter error
@@ -88,13 +83,11 @@ int main() {
          << chrono::duration_cast<chrono::milliseconds>(end - begin).count()
          << " milliseconds." << endl;
 
-    for (vector<pair<char*, int>>::iterator i = v.begin(); i != v.end(); ++i)
-        delete i->first;
+    for (auto i = v.begin(); i != v.end(); ++i) delete i->first;
 
     begin = chrono::steady_clock::now();
 
-    for (vector<pair<char*, int>>::const_iterator i = v2.cbegin();
-         i != v2.cend(); ++i) {
+    for (auto i = v2.cbegin(); i != v2.cend(); ++i) {
         if (m.lookup_from(1, i->first, i->second)) {
             ++falsepos;
         }
@@ -108,8 +101,7 @@ int main() {
          << (double)falsepos / (double)test_size
          << ", Desired fp rate: " << test_fprate << endl;
 
-    for (vector<pair<char*, int>>::iterator i = v2.begin(); i != v2.end(); ++i)
-        delete i->first;
+    for (auto i = v2.begin(); i != v2.end(); ++i) delete i->first;
 
     cin.get();
     return 0;
