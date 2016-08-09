@@ -49,6 +49,6 @@ void shm_bloom_filter::insert(char *data, int data_len) {
     }
 }
 
-void shm_bloom_filter::clear() { std::fill(bits_.begin(), bits_.end(), false); }
+void shm_bloom_filter::reset() { bits_.reset(); }
 
 }  // namespace bf

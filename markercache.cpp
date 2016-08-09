@@ -73,6 +73,10 @@ void marker_cache::remove(marker_cache_id id) {
     if (exists(id)) data_->erase(id);
 }
 
+void marker_cache::reset(marker_cache_id id) {
+    if (exists(id)) data_->at(id).reset();
+}
+
 void marker_cache::erase() {
     for (id_bf_map::iterator it = data_->begin(); it != data_->end();) {
         data_->erase(it++);

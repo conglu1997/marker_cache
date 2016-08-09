@@ -49,6 +49,8 @@ class shm_bloom_filter {
     bool lookup(char *data, int data_len) const;
     void insert(char *data, int data_len);
 
+    void reset();
+
    private:
     hasher hasher_;
     bitset bits_;

@@ -1,12 +1,12 @@
 #ifndef MARKER_CACHE_H
 #define MARKER_CACHE_H
-#include <shmbloomfilter.h>
+#include <shmBloomfilter.h>
 
 class marker_cache {
     // Suitable identification scheme for subtable division here
     // To replace the id scheme, simply change this typedef and provide a
     // comparator for the map, currently std::less<int>
-	
+
     typedef int marker_cache_id;
     typedef std::less<int> id_comparator;
 
@@ -18,7 +18,7 @@ class marker_cache {
         id_bf_map;
 
     // API for managing shared memory and retrieving handles to data
-    // Takes identifier of the bloom filter (per subtable, per marker type)
+    // Takes identifier of the Bloom filter (per subtable, per marker type)
     // For our purposes, identifier is just the marker type (int32)
    public:
     // Create shared memory block allocating *bytes* bytes, writing process
@@ -33,10 +33,10 @@ class marker_cache {
     marker_cache &operator=(marker_cache const &) = delete;
 
     // Create new cache, size bits, fp false-positive rate
-    // returns the number of bytes occupied by the new bloom filters
+    // returns the number of bytes occupied by the new Bloom filters
     size_t create(marker_cache_id id, double fp, size_t capacity);
 
-    // Check if a bloom filter exists with this id
+    // Check if a Bloom filter exists with this id
     bool exists(marker_cache_id id) const;
 
     // data_len is num of chars (bytes)
@@ -46,14 +46,17 @@ class marker_cache {
     // returns true if success, false if cache not found
     bool insert_into(marker_cache_id id, char *data, int data_len);
 
-    // Remove a bloom filter
+    // Remove a Bloom filter
     void remove(marker_cache_id id);
 
-    // Erase all the bloom filters
+    // Reset a Bloom filter
+    void reset(marker_cache_id id);
+
+    // Erase all the Bloom filters
     void erase();
 
    private:
-    boost::interprocess::managed_shared_memory* segment_;
+    boost::interprocess::managed_shared_memory *segment_;
     id_bf_map *data_;
     bf::void_allocator get_allocator();
     bool owner_;

@@ -29,9 +29,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define BOOST_DATE_TIME_NO_LIB
 #include <h3.h>
-#include <vector>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
+#include <vector>
 
 namespace bf {
 

@@ -24,7 +24,7 @@ vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
     default_random_engine rng(random_device{}());
     uniform_int_distribution<size_t> distribution(0, chars.size() - 1);
     uniform_int_distribution<size_t> wdistribution(min_width, max_width);
-    int width = wdistribution(rng);
+    size_t width = wdistribution(rng);
 
     for (size_t i = 0; i < num_elems; ++i) {
         char* s = new char[width];
@@ -36,17 +36,17 @@ vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
 }
 
 int main() {
-    size_t bytes_allocated = 5395000000;
-    marker_cache m(bytes_allocated);  // 5.02GB
+    size_t bytes_allocated = 10000000;
+    marker_cache m(bytes_allocated);  // 5.02GB in final
 
-    size_t test_size = 1000000;  // 1 million
+    size_t test_size = 1000000;  // 3 million
     double test_fprate = 0.001;  // 1 in 1
     size_t min_test_width = 8;
     size_t max_test_width = 16;
     size_t falsepos = 0;
     assert(sizeof(char) == 1);  // Char used is correct size
 
-    // Create a bloom filter with id 1
+    // Create a Bloom filter with id 1
     cout << "Object occupies " << m.create(1, test_fprate, test_size)
          << " bytes." << endl;
 
