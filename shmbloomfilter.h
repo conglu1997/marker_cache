@@ -28,13 +28,19 @@ POSSIBILITY OF SUCH DAMAGE.
 #define BF_BLOOM_FILTER_SHM_H
 
 #include <hash.h>
+#include <boost/dynamic_bitset.hpp>
 #include <boost/interprocess/containers/map.hpp>
 
 namespace bf {
 
 typedef boost::interprocess::allocator<bool, segment_manager_t> bool_allocator;
+typedef size_t block_t;
+typedef boost::interprocess::allocator<block_t, segment_manager_t>
+    block_allocator;
+typedef boost::dynamic_bitset<block_t, block_allocator> bitset;
+
 // Use the vector<bool> 1-bit per bool optimisation
-typedef std::vector<bool, bool_allocator> bitset;
+// typedef std::vector<bool, bool_allocator> bitset;
 
 class shm_bloom_filter {
    public:
@@ -42,9 +48,6 @@ class shm_bloom_filter {
 
     bool lookup(char *data, int data_len) const;
     void insert(char *data, int data_len);
-
-    // Reset the bloom filter
-    void clear();
 
    private:
     hasher hasher_;

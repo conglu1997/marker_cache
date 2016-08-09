@@ -9,7 +9,7 @@ marker_cache::marker_cache(size_t bytes) : owner_(true) {
 
     data_ = segment_->construct<id_bf_map>("MarkerCache")(std::less<int>(),
                                                           get_allocator());
-    assert(segment_.find<id_bf_map>("MarkerCache").first != NULL);
+    assert(segment_->find<id_bf_map>("MarkerCache").first != NULL);
 }
 
 marker_cache::marker_cache() : owner_(false) {
