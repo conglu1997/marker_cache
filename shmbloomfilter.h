@@ -39,9 +39,6 @@ typedef boost::interprocess::allocator<block_t, segment_manager_t>
     block_allocator;
 typedef boost::dynamic_bitset<block_t, block_allocator> bitset;
 
-// Use the vector<bool> 1-bit per bool optimisation
-// typedef std::vector<bool, bool_allocator> bitset;
-
 class shm_bloom_filter {
    public:
     shm_bloom_filter(const void_allocator &void_alloc, size_t m, size_t k);

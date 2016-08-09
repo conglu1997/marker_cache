@@ -1,6 +1,6 @@
 #ifndef MARKER_CACHE_H
 #define MARKER_CACHE_H
-#include <shmBloomfilter.h>
+#include <shmbloomfilter.h>
 
 class marker_cache {
     // Suitable identification scheme for subtable division here

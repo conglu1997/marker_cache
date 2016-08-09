@@ -37,10 +37,10 @@ vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
 
 int main() {
     size_t bytes_allocated = 10000000;
-    marker_cache m(bytes_allocated);  // 5.02GB in final
+    marker_cache m(bytes_allocated);  // 5.02GB in final for 3 billion at 0.001
 
-    size_t test_size = 1000000;  // 3 million
-    double test_fprate = 0.001;  // 1 in 1
+    size_t test_size = 1000000;
+    double test_fprate = 0.001;
     size_t min_test_width = 8;
     size_t max_test_width = 16;
     size_t falsepos = 0;
