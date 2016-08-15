@@ -2,6 +2,9 @@
 #define MARKER_CACHE_H
 #include <shmbloomfilter.h>
 
+// NOTE: Dynamic resizing is only possible if no processes map the shared
+// memory, need to communicate with Search Director to achieve this.
+
 class marker_cache {
     // Suitable identification scheme for subtable division here
     // To replace the id scheme, simply change this typedef and provide a

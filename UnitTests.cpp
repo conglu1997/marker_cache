@@ -106,6 +106,7 @@ BOOST_AUTO_TEST_CASE(Creation) {
     for (auto i = 0; i < 1000; ++i) {
         BOOST_CHECK_NO_THROW(m.create(i, fprate, capacity));
         BOOST_CHECK(m.exists(i));
+		BOOST_CHECK(m.create(i, fprate, capacity) == 0); // No double creation
     }
 }
 

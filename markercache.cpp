@@ -30,7 +30,9 @@ marker_cache::~marker_cache() {
 
 size_t marker_cache::create(const marker_cache_id id, double fp,
                             size_t capacity) {
-    // Throws if a read-only trys to create a bloom filter
+	if (exists(id))
+		return 0; // Don't do anything if already exists at the id 
+
     long long f = segment_->get_free_memory();
 
     // Work out optimum parameters
@@ -43,7 +45,7 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
     // k = (m/n)*ln2
     size_t k = std::ceil(frac * ln2);
 
-	// If a bloom filter already exists at the id, then this operation will do nothing.
+	// Throws if a read-only trys to create a bloom filter
     data_->insert(bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k)));
     return f - segment_->get_free_memory();
 }
