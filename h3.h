@@ -68,7 +68,7 @@ class h3 {
             for (size_t val = 0; val < byte_range; ++val) {
                 bytes_[byte][val] = 0;
                 for (size_t bit = 0; bit < bits_per_byte; ++bit)
-                    if (val & (1 << bit))
+                    if (val & ((size_t)1 << bit))
                         bytes_[byte][val] ^= bits[byte * bits_per_byte + bit];
             }
     }

@@ -43,6 +43,7 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
     // k = (m/n)*ln2
     size_t k = std::ceil(frac * ln2);
 
+	// If a bloom filter already exists at the id, then this operation will do nothing.
     data_->insert(bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k)));
     return f - segment_->get_free_memory();
 }
