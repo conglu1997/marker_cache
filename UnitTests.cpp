@@ -36,7 +36,6 @@ struct GeneratedMarkerCache {
     }
 
     // Generate length-8 random strings for testing
-    // Need to delete after using test data.
     vector<pair<char*, int>> generate_test_data(size_t num_elems,
                                                 size_t min_width,
                                                 size_t max_width) {
@@ -63,7 +62,7 @@ struct GeneratedMarkerCache {
     }
 };
 
-BOOST_FIXTURE_TEST_SUITE(MarkerCache, GeneratedMarkerCache)
+BOOST_FIXTURE_TEST_SUITE(MarkerCacheTests, GeneratedMarkerCache)
 
 BOOST_AUTO_TEST_CASE(NoFalseNegatives) {
     BOOST_REQUIRE(sizeof(char) == 1);  // Check chars are correct size
@@ -87,11 +86,8 @@ BOOST_AUTO_TEST_CASE(FalsePositiveRate) {
 
     size_t falsepos = 0;
 
-    for (auto i = test_set_two.cbegin(); i != test_set_two.cend(); ++i) {
-        if (m.lookup_from(test_id, i->first, i->second)) {
-            ++falsepos;
-        }
-    }
+    for (auto i = test_set_two.cbegin(); i != test_set_two.cend(); ++i)
+        if (m.lookup_from(test_id, i->first, i->second)) ++falsepos;
 
     auto observed_fprate = (double)falsepos / (double)test_size;
 
@@ -106,7 +102,7 @@ BOOST_AUTO_TEST_CASE(Creation) {
     for (auto i = 0; i < 1000; ++i) {
         BOOST_CHECK_NO_THROW(m.create(i, fprate, capacity));
         BOOST_CHECK(m.exists(i));
-		BOOST_CHECK(m.create(i, fprate, capacity) == 0); // No double creation
+        BOOST_CHECK(m.create(i, fprate, capacity) == 0);  // No double creation
     }
 }
 
@@ -124,16 +120,17 @@ BOOST_AUTO_TEST_CASE(SizeConstraints) {
     BOOST_CHECK_CLOSE(2 * size1 - size2, 737408, 1);
 
     // 1-bit per bool (1m calc http://hur.st/bloomfilter?n=1000000&p=0.001)
-	// 1% leeway
+    // 1% leeway
     BOOST_CHECK_CLOSE(1797198.5, size2 - size1, 1);
     BOOST_CHECK_CLOSE(1797198.5, size3 - size2, 1);
 }
 
-BOOST_AUTO_TEST_CASE(Deletion) {
+BOOST_AUTO_TEST_CASE(Removal) {
     auto fprate = 1;
     auto capacity = 1;
 
     for (auto i = 0; i < 1000; ++i) {
+        BOOST_CHECK_NO_THROW(m.remove(i));  // Empty removes
         BOOST_CHECK_NO_THROW(m.create(i, fprate, capacity));
         BOOST_CHECK(m.exists(i));
         BOOST_CHECK_NO_THROW(m.remove(i));
@@ -150,9 +147,23 @@ BOOST_AUTO_TEST_CASE(Erasure) {
         BOOST_CHECK(m.exists(i));
     }
 
-    m.erase();
+    BOOST_CHECK_NO_THROW(m.erase());
 
     for (auto i = 0; i < 1000; ++i) BOOST_CHECK(m.exists(i) == false);
+}
+
+BOOST_AUTO_TEST_CASE(QueryingFromNonExistant) {
+    for (auto i = test_set_one.begin(); i != test_set_one.end(); ++i)
+        BOOST_CHECK_MESSAGE(
+            m.lookup_from(test_id, i->first, i->second) == false,
+            "False negatives from non-existant bloom filter");
+}
+
+BOOST_AUTO_TEST_CASE(InsertingIntoNonExistant) {
+    for (auto i = test_set_one.begin(); i != test_set_one.end(); ++i)
+        BOOST_CHECK_MESSAGE(
+            m.insert_into(test_id, i->first, i->second) == false,
+            "Inserting into non-existant bloom filter");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
