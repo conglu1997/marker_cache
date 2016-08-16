@@ -36,18 +36,19 @@ vector<pair<char*, int>> generate_test_data(size_t num_elems, size_t min_width,
 }
 
 int main() {
-    size_t bytes_allocated = 5400000000;
-    marker_cache m(bytes_allocated);  // 5.02GB in final for 3 billion at 0.001
+    size_t bytes_allocated = 80000;
+    auto m = new marker_cache(
+        bytes_allocated);  // 5.02GB in final for 3 billion at 0.001
 
-    size_t test_size = 1000000;
-    double test_fprate = 0.001;
+    size_t test_size = 10000;
+    double test_fprate = 0.9;
     size_t min_test_width = 8;
     size_t max_test_width = 16;
     size_t falsepos = 0;
     assert(sizeof(char) == 1);  // Char used is correct size
 
     // Create a Bloom filter with id 1
-    cout << "Object occupies " << m.create(1, test_fprate, test_size)
+    cout << "Object occupies " << m->create(1, test_fprate, test_size)
          << " bytes." << endl;
 
     cout << "Priming test data:" << endl;
@@ -60,7 +61,7 @@ int main() {
     auto begin = chrono::steady_clock::now();
 
     for (auto i = v.begin(); i != v.end(); ++i)
-        m.insert_into(1, i->first, i->second);
+		m->insert_into(1, i->first, i->second);
 
     auto end = chrono::steady_clock::now();
 
@@ -71,7 +72,7 @@ int main() {
     begin = chrono::steady_clock::now();
 
     for (auto i = v.cbegin(); i != v.cend(); ++i) {
-        if (m.lookup_from(1, i->first, i->second) == 0) {
+        if (m->lookup_from(1, i->first, i->second) == 0) {
             cout << "WRONG - ABORT ABORT" << endl;
             // Something horribly wrong has gone on here, Bloom filter error
         }
@@ -88,7 +89,7 @@ int main() {
     begin = chrono::steady_clock::now();
 
     for (auto i = v2.cbegin(); i != v2.cend(); ++i) {
-        if (m.lookup_from(1, i->first, i->second)) {
+        if (m->lookup_from(1, i->first, i->second)) {
             ++falsepos;
         }
     }
@@ -102,6 +103,8 @@ int main() {
          << ", Desired fp rate: " << test_fprate << endl;
 
     for (auto i = v2.begin(); i != v2.end(); ++i) delete i->first;
+
+	delete m;
 
     cin.get();
     return 0;

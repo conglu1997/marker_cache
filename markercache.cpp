@@ -1,4 +1,5 @@
 #include <markercache.h>
+#include <iostream>
 
 marker_cache::marker_cache(size_t bytes) : owner_(true) {
     // Clear shared memory object if it exists before creation
@@ -47,6 +48,7 @@ size_t marker_cache::create(const marker_cache_id id, double fp,
 
 	// Throws if a read-only trys to create a bloom filter
     data_->insert(bf_pair(id, bf::shm_bloom_filter(get_allocator(), m, k)));
+
     return f - segment_->get_free_memory();
 }
 
