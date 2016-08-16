@@ -1,5 +1,4 @@
 #include <markercache.h>
-#include <iostream>
 
 marker_cache::marker_cache(size_t bytes) : owner_(true) {
     // Clear shared memory object if it exists before creation
