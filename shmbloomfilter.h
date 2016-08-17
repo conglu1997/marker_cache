@@ -27,11 +27,18 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef BF_BLOOM_FILTER_SHM_H
 #define BF_BLOOM_FILTER_SHM_H
 
-#include <hash.h>
+#define BOOST_DATE_TIME_NO_LIB
+#include <mmh3.h>
 #include <boost/dynamic_bitset.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/map.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
 
 namespace bf {
+
+	typedef boost::interprocess::managed_shared_memory::segment_manager
+		segment_manager_t;
+	typedef boost::interprocess::allocator<void, segment_manager_t> void_allocator;
 
 typedef boost::interprocess::allocator<bool, segment_manager_t> bool_allocator;
 typedef size_t block_t;
@@ -49,8 +56,8 @@ class shm_bloom_filter {
     void reset();
 
    private:
-    hasher hasher_;
     bitset bits_;
+	size_t num_hashes;
 };
 
 }  // namespace bf

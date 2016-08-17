@@ -30,23 +30,30 @@ namespace bf {
 
 shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc, size_t m,
                                    size_t k)
-    : hasher_(k, void_alloc), bits_(m, false, void_alloc) {}
+    : bits_(m, false, void_alloc), num_hashes(k) {}
 
 bool shm_bloom_filter::lookup(char *data, int data_len) const {
-    std::vector<digest> digests = hasher_(data, data_len);
-    for (std::vector<digest>::const_iterator i = digests.cbegin();
-         i != digests.cend(); ++i) {
-        if (!bits_[*i % bits_.size()]) return false;
-    }
+    uint64_t *hash = new uint64_t[2];
+    MurmurHash3_x64_128(data, data_len, 2016, hash);
+
+    for (int i = 0; i < num_hashes; ++i)
+        if (!bits_[(hash[0] + (long)i * hash[1]) % bits_.size()]) {
+            delete[] hash;
+            return false;
+        }
+
+    delete[] hash;
     return true;
 }
 
 void shm_bloom_filter::insert(char *data, int data_len) {
-    std::vector<digest> digests = hasher_(data, data_len);
-    for (std::vector<digest>::iterator i = digests.begin(); i != digests.end();
-         ++i) {
-        bits_[*i % bits_.size()] = true;
-    }
+    uint64_t *hash = new uint64_t[2];
+    MurmurHash3_x64_128(data, data_len, 2016, hash);
+
+    for (int i = 0; i < num_hashes; ++i)
+        bits_[(hash[0] + (long)i * hash[1]) % bits_.size()] = true;
+
+    delete[] hash;
 }
 
 void shm_bloom_filter::reset() { bits_.reset(); }
