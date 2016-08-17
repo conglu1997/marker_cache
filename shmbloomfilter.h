@@ -36,9 +36,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 namespace bf {
 
-	typedef boost::interprocess::managed_shared_memory::segment_manager
-		segment_manager_t;
-	typedef boost::interprocess::allocator<void, segment_manager_t> void_allocator;
+typedef boost::interprocess::managed_shared_memory::segment_manager
+    segment_manager_t;
+typedef boost::interprocess::allocator<void, segment_manager_t> void_allocator;
 
 typedef boost::interprocess::allocator<bool, segment_manager_t> bool_allocator;
 typedef size_t block_t;
@@ -57,7 +57,7 @@ class shm_bloom_filter {
 
    private:
     bitset bits_;
-	size_t num_hashes;
+    size_t num_hashes;
 };
 
 }  // namespace bf
