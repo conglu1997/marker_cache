@@ -34,25 +34,25 @@ shm_bloom_filter::shm_bloom_filter(const void_allocator &void_alloc, size_t m,
 
 bool shm_bloom_filter::lookup(char *data, int data_len) const {
     uint64_t *hash = new uint64_t[2];
-    MurmurHash3_x64_128(data, data_len, 2016, hash);
+    MurmurHash3_x64_128(data, data_len, 0, hash);
 
-    for (int i = 0; i < num_hashes; ++i)
-        if (!bits_[(hash[0] + (long)i * hash[1]) % bits_.size()]) {
+    for (int i = 0; i < num_hashes; ++i) {
+        if (!bits_[(hash[0] + i * hash[1]) % bits_.size()]) {
             delete[] hash;
             return false;
         }
-
+    }
     delete[] hash;
     return true;
 }
 
 void shm_bloom_filter::insert(char *data, int data_len) {
     uint64_t *hash = new uint64_t[2];
-    MurmurHash3_x64_128(data, data_len, 2016, hash);
+    MurmurHash3_x64_128(data, data_len, 0, hash);
 
-    for (int i = 0; i < num_hashes; ++i)
-        bits_[(hash[0] + (long)i * hash[1]) % bits_.size()] = true;
-
+    for (int i = 0; i < num_hashes; ++i) {
+        bits_[(hash[0] + i * hash[1]) % bits_.size()] = true;
+    }
     delete[] hash;
 }
 
