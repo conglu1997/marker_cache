@@ -68,6 +68,7 @@ BOOST_FIXTURE_TEST_SUITE(MarkerCacheTests, GeneratedMarkerCache)
 /*
 Testing the shared memory is in fact read-only
 --Throws memory access violation if write attempted
+--Not included since it's not a language level exception
 Testing the same filters exist on the search director side
 Testing reads and false positives
 */
