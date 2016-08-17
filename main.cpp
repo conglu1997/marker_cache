@@ -61,7 +61,7 @@ int main() {
     auto begin = chrono::steady_clock::now();
 
     for (auto i = v.begin(); i != v.end(); ++i)
-		m->insert_into(1, i->first, i->second);
+        m->insert_into(1, i->first, i->second);
 
     auto end = chrono::steady_clock::now();
 
@@ -103,7 +103,7 @@ int main() {
 
     for (auto i = v2.begin(); i != v2.end(); ++i) delete i->first;
 
-	delete m;
+    delete m;
 
-	cin.get();
+    cin.get();
 }
