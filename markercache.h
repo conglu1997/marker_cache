@@ -24,7 +24,10 @@ class marker_cache {
     // Takes identifier of the Bloom filter (per subtable, per marker type)
     // For our purposes, identifier is just the marker type (int32)
    public:
-    // Create shared memory block allocating *bytes* bytes, writing process
+    // Create shared memory block allocating *bytes* bytes on the writing
+    // process
+    // NOTE: Allocating large blocks is unsafe, keep caches less than 500m
+    // elements.
     marker_cache(size_t bytes);
 
     // Throws an exception if the memory is not active, searching process
@@ -59,6 +62,7 @@ class marker_cache {
     void erase();
 
    private:
+    // The shared memory object
     boost::interprocess::managed_shared_memory *segment_;
     id_bf_map *data_;
     bf::void_allocator get_allocator();

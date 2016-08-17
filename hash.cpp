@@ -32,7 +32,7 @@ namespace bf {
 hash_function::hash_function(size_t seed) : h3_(seed) {}
 
 size_t hash_function::operator()(char *data, int size) const {
-    // Current max is 36 bytes - settable in hash.h
+    // Current max is 200 bytes - in line with DBApp's comparison scheme
     if (size > max_obj_size) return h3_(data, max_obj_size);
     return size == 0 ? 0 : h3_(data, size);
 }

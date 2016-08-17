@@ -46,7 +46,7 @@ typedef boost::interprocess::allocator<void, segment_manager_t> void_allocator;
 class hash_function {
    public:
     // Max object size in bytes that we will receive
-    const static int max_obj_size = 36;
+    const static int max_obj_size = 200;
 
     hash_function(size_t seed);
 
@@ -66,7 +66,7 @@ class hasher {
     std::vector<digest> operator()(char *data, int size) const;
 
    private:
-    // Each hash function occupies 72KB
+    // Each hash function occupies ~400KB
     std::vector<hash_function, hash_fn_allocator> fns_;
 };
 
