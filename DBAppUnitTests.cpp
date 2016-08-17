@@ -129,9 +129,6 @@ BOOST_AUTO_TEST_CASE(SizeConstraints) {
     // Consistent linear sizing within 1%
     BOOST_CHECK_CLOSE(size2 - size1, size3 - size2, 1);
 
-    // ~4MB for 10 hash function overhead on 64-bit systems within 1%
-    BOOST_CHECK_CLOSE(2 * size1 - size2, 4096128, 1);
-
     // 1-bit per bool (1m calc http://hur.st/bloomfilter?n=1000000&p=0.001)
     // 1% leeway
     BOOST_CHECK_CLOSE(1797198.5, size2 - size1, 1);
