@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(FalsePositiveRate) {
     double observed_fprate = (double)falsepos / (double)test_size;
 
     BOOST_CHECK_CLOSE(test_fprate, observed_fprate,
-                      10);  // Within 10% of each other
+                      20);  // Within 20% of each other
 }
 
 BOOST_AUTO_TEST_CASE(Creation) {
