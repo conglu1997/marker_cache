@@ -41,9 +41,10 @@ int main() {
     const static size_t test_size = 100000;
     const static size_t min_test_width = 50;
     const static size_t max_test_width = 250;
-	vector<pair<char *, int>> test_set = generate_test_data(test_size, min_test_width, max_test_width);
+    vector<pair<char *, int>> test_set =
+        generate_test_data(test_size, min_test_width, max_test_width);
 
-	m.create(1, 0.001, test_size);
+    m.create(1, 0.001, test_size);
 
     for (vector<pair<char *, int>>::const_iterator i = test_set.cbegin();
          i != test_set.cend(); ++i)
@@ -53,7 +54,7 @@ int main() {
 
     cin.get();
 
-	m.insert_into(1, test_set[0].first, test_set[0].second);
+    m.insert_into(1, test_set[0].first, test_set[0].second);
 
     for (vector<pair<char *, int>>::iterator i = test_set.begin();
          i != test_set.end(); ++i)
