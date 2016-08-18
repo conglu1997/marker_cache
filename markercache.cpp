@@ -22,9 +22,9 @@ marker_cache::marker_cache() : owner_(false) {
 
 marker_cache::~marker_cache() {
     // Clear shared memory on exit if we own the memory
-    if (owner_) {
+    if (owner_)
         boost::interprocess::shared_memory_object::remove("BFSharedMemory");
-    }
+
     delete segment_;
 }
 
@@ -81,9 +81,8 @@ void marker_cache::reset(marker_cache_id id) {
 }
 
 void marker_cache::erase() {
-    for (id_bf_map::iterator it = data_->begin(); it != data_->end();) {
+    for (id_bf_map::iterator it = data_->begin(); it != data_->end();)
         data_->erase(it++);
-    }
 }
 
 bf::void_allocator marker_cache::get_allocator() {
