@@ -2,4 +2,4 @@
 
 char* bloom filter implemented in shared memory
 
-The SDUnitTests need to be run on an active SAS server.
+To run SDUnitTests, compile TestingSHM.cpp and run it in the background and then run SDUnitTests.
