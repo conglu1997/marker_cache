@@ -26,7 +26,7 @@ struct GeneratedMarkerCache {
     const static size_t max_test_width = 250;
 
     GeneratedMarkerCache() : m() {
-        BOOST_TEST_MESSAGE("Setup cache in shared memory");
+        BOOST_TEST_MESSAGE("Read existing cache in shared memory");
 
         test_set =
             generate_test_data(test_size, min_test_width, max_test_width);

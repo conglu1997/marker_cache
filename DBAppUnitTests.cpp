@@ -18,7 +18,6 @@ size_t random(size_t min, size_t max)  // range : [min, max]
 }
 
 struct GeneratedMarkerCache {
-    friend class marker_cache;
     marker_cache* m;
     vector<pair<char*, int>> test_set_one;
     vector<pair<char*, int>> test_set_two;
