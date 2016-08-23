@@ -4,7 +4,6 @@
 #include <boost/interprocess/containers/deque.hpp>
 #include <boost/interprocess/sync/interprocess_sharable_mutex.hpp>
 #include <boost/interprocess/sync/sharable_lock.hpp>
-#include <boost/interprocess/sync/upgradable_lock.hpp>
 #include <ctime>
 #include <memory>
 
