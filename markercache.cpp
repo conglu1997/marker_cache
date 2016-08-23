@@ -38,7 +38,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
     // from that
     time_t start = now -= sec_filterduration * (num_filters - 1);
     // Setup the memory at the start
-    for (auto i = 0; i < num_filters; ++i) {
+    for (size_t i = 0; i < num_filters; ++i) {
         data_->push_back(
             bf_pair(timerange(start, start + sec_filterduration - 1),
                     bf::shm_bloom_filter(get_allocator(), filter_capacity, k)));
