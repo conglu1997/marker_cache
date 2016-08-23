@@ -131,7 +131,6 @@ bf::void_allocator marker_cache::get_allocator() {
 }
 
 bool marker_cache::overlapping_timerange(timerange fst, timerange snd) const {
-    assert(fst.first <= fst.second);
-    assert(snd.first <= snd.second);
+    // Assume ranges are valid
     return (fst.first <= snd.second) && (snd.first <= fst.second);
 }
