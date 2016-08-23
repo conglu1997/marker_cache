@@ -1,10 +1,11 @@
 #define BOOST_TEST_MODULE MarkerCacheTest
 #include <markercache.h>
 #include <boost/test/included/unit_test.hpp>
-#include <iostream>
 #include <vector>
 
 using namespace std;
+
+// Size constraints are now guaranteed by the creation of the marker cache
 
 size_t random(size_t min, size_t max)  // range : [min, max]
 {
@@ -17,14 +18,22 @@ size_t random(size_t min, size_t max)  // range : [min, max]
 }
 
 struct GeneratedMarkerCache {
-    marker_cache m;
+    marker_cache* m;
     vector<pair<char*, int>> test_set_one;
     vector<pair<char*, int>> test_set_two;
-    const static size_t test_size = 100000;
-    const static int test_id = 1;
+    static const size_t test_size = 100000;
+    static const double test_fprate;
 
-    GeneratedMarkerCache() : m(100000000) {
+    static const size_t dur = 30;
+    static const size_t lifespan = 90;
+
+    GeneratedMarkerCache() {
         BOOST_TEST_MESSAGE("Setup cache in shared memory");
+
+        size_t num_filters = ceil((double)lifespan / (double)dur) + 1;
+
+        m = new marker_cache(dur, lifespan, test_fprate,
+                             test_size * num_filters);
 
         size_t min_test_width = 50;
         size_t max_test_width = 250;
@@ -43,9 +52,9 @@ struct GeneratedMarkerCache {
         for (vector<pair<char*, int>>::iterator i = test_set_two.begin();
              i != test_set_two.end(); ++i)
             delete i->first;
+        delete m;
     }
 
-    // Generate length-8 random strings for testing
     vector<pair<char*, int>> generate_test_data(size_t num_elems,
                                                 size_t min_width,
                                                 size_t max_width) {
@@ -70,17 +79,17 @@ struct GeneratedMarkerCache {
     }
 };
 
+const double GeneratedMarkerCache::test_fprate = 0.001;
+
 BOOST_FIXTURE_TEST_SUITE(MarkerCacheTests, GeneratedMarkerCache)
 
 BOOST_AUTO_TEST_CASE(NoFalseNegatives) {
     BOOST_REQUIRE(sizeof(char) == 1);  // Check chars are correct size
 
-    BOOST_CHECK_NO_THROW(m.create(test_id, 0.001, test_size));
-
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i) {
-        BOOST_CHECK_NO_THROW(m.insert_into(test_id, i->first, i->second));
-        BOOST_CHECK_MESSAGE(m.lookup_from(test_id, i->first, i->second),
+        BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
+        BOOST_CHECK_MESSAGE(m->lookup_from_current(i->first, i->second),
                             "False Negative - fatal error");
     }
 }
@@ -88,94 +97,64 @@ BOOST_AUTO_TEST_CASE(NoFalseNegatives) {
 BOOST_AUTO_TEST_CASE(FalsePositiveRate) {
     BOOST_REQUIRE(sizeof(char) == 1);  // Check chars are correct size
 
-    double test_fprate = 0.001;
-
-    BOOST_CHECK_NO_THROW(m.create(test_id, test_fprate, test_size));
-
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i)
-        BOOST_CHECK_NO_THROW(m.insert_into(test_id, i->first, i->second));
+        BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
 
     size_t falsepos = 0;
 
     for (vector<pair<char*, int>>::const_iterator i = test_set_two.cbegin();
          i != test_set_two.cend(); ++i)
-        if (m.lookup_from(test_id, i->first, i->second)) ++falsepos;
+        if (m->lookup_from_current(i->first, i->second)) ++falsepos;
 
     double observed_fprate = (double)falsepos / (double)test_size;
 
-    BOOST_CHECK_CLOSE(test_fprate, observed_fprate,
-                      20);  // Within 20% of each other
+    // This test needs a high sample size to be accurate
+    BOOST_CHECK_CLOSE(test_fprate, observed_fprate, 30);
 }
 
-BOOST_AUTO_TEST_CASE(Creation) {
-    double fprate = 0.5;
-    size_t capacity = 1000;
+BOOST_AUTO_TEST_CASE(Ageing) {
+    size_t num_filters = ceil((double)lifespan / (double)dur) + 1;
 
-    for (int i = 0; i < 100; ++i) {
-        BOOST_CHECK_NO_THROW(m.create(i, fprate, capacity));
-        BOOST_CHECK(m.exists(i));
-        BOOST_CHECK(m.create(i, fprate, capacity) == 0);  // No double creation
-    }
-}
-
-BOOST_AUTO_TEST_CASE(SizeConstraints) {
-    double test_fprate = 0.001;
-
-    double size1 = m.create(1, test_fprate, 1000000);
-    double size2 = m.create(2, test_fprate, 2000000);
-    double size3 = m.create(3, test_fprate, 3000000);
-
-    // Consistent linear sizing within 1%
-    BOOST_CHECK_CLOSE(size2 - size1, size3 - size2, 1);
-
-    // 1-bit per bool (1m calc http://hur.st/bloomfilter?n=1000000&p=0.001)
-    // 1% leeway
-    BOOST_CHECK_CLOSE(1797198.5, size2 - size1, 1);
-    BOOST_CHECK_CLOSE(1797198.5, size3 - size2, 1);
-}
-
-BOOST_AUTO_TEST_CASE(Removal) {
-    double test_fprate = 0.5;
-    size_t capacity = 1000;
-
-    for (int i = 0; i < 100; ++i) {
-        BOOST_CHECK_NO_THROW(m.remove(i));  // Empty removes
-        BOOST_CHECK_NO_THROW(m.create(i, test_fprate, capacity));
-        BOOST_CHECK(m.exists(i));
-        BOOST_CHECK_NO_THROW(m.remove(i));
-        BOOST_CHECK(m.exists(i) == false);
-    }
-}
-
-BOOST_AUTO_TEST_CASE(Erasure) {
-    double test_fprate = 0.5;
-    size_t capacity = 1000;
-
-    for (int i = 0; i < 100; ++i) {
-        BOOST_CHECK_NO_THROW(m.create(i, test_fprate, capacity));
-        BOOST_CHECK(m.exists(i));
+    for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
+         i != test_set_one.cend(); ++i) {
+        BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
+        BOOST_CHECK_MESSAGE(m->lookup_from_current(i->first, i->second),
+                            "False Negative - fatal error");
     }
 
-    BOOST_CHECK_NO_THROW(m.erase());
-
-    for (int i = 0; i < 100; ++i) BOOST_CHECK(m.exists(i) == false);
-}
-
-BOOST_AUTO_TEST_CASE(QueryingFromNonExistant) {
+    for (int i = 0; i < num_filters - 1; ++i) {
+        m->age();
+        // Search entire timespan to make sure data still exists
+        for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
+             i != test_set_one.cend(); ++i)
+            BOOST_CHECK_NO_THROW(m->lookup_from(
+                0, (numeric_limits<time_t>::max)(), i->first, i->second));
+    }
+    m->age();
+    // Ensure data is gone after *num_filters* ageing cycles
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i)
-        BOOST_CHECK_MESSAGE(
-            m.lookup_from(test_id, i->first, i->second) == false,
-            "False negatives from non-existant bloom filter");
+        BOOST_CHECK_NO_THROW(!m->lookup_from(0, (numeric_limits<time_t>::max)(),
+                                             i->first, i->second));
 }
 
-BOOST_AUTO_TEST_CASE(InsertingIntoNonExistant) {
+BOOST_AUTO_TEST_CASE(TimerangeLookups) {
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
-         i != test_set_one.cend(); ++i)
-        BOOST_CHECK_MESSAGE(
-            m.insert_into(test_id, i->first, i->second) == false,
-            "Inserting into non-existant bloom filter");
+         i != test_set_one.cend(); ++i) {
+        BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
+        BOOST_CHECK_MESSAGE(m->lookup_from_current(i->first, i->second),
+                            "False Negative - fatal error");
+    }
+
+    for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
+         i != test_set_one.cend(); ++i) {
+        BOOST_CHECK_NO_THROW(m->lookup_from(
+            time(NULL), (numeric_limits<time_t>::max)(), i->first, i->second));
+        // Test data did not exist before current period
+        BOOST_CHECK_NO_THROW(
+            !m->lookup_from(0, time(NULL) - 100, i->first, i->second));
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
