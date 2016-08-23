@@ -84,8 +84,10 @@ bool marker_cache::lookup_from(time_t start, time_t end, char* data,
         boost::interprocess::interprocess_sharable_mutex>
         lock(*mutex);
 
-    // Iterate through the buffer, searching in the overlapping timerange;
-    for (cache_buffer::iterator i = buf_->begin(); i != buf_->end(); ++i) {
+    // Iterate through the buffer, searching in the overlapping timerange
+    // Searches are more likely to be on recent data, start from the end
+    for (cache_buffer::reverse_iterator i = buf_->rbegin(); i != buf_->rend();
+         ++i) {
         if (!overlapping_timerange(search_period, i->first)) {
             if (!within_search_period) {
                 continue;
