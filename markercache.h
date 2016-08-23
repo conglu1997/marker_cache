@@ -53,7 +53,7 @@ class marker_cache {
 
     // Filter duration in seconds, specific to DBApp, won't be initialised on
     // the SD side
-    size_t sec_filterduration;
+    time_t sec_filterduration;
 
     bool within_timerange(time_t time, timerange range) const;
 };
