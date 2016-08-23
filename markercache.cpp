@@ -30,6 +30,9 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
     time_t now = time(NULL);
 
     // NO FILTERS DETECTED... calculate filler dates
+    // We create many empty filters because we want to fix the number of filters
+    // at the start and recycle old ones as appropriate since we allocate a
+    // fixed amount of memory
     // TODO: Let the code read Bloom filters from disk and then calculate dates
     // from that
     time_t start = now -= sec_filterduration * (num_filters - 1);
