@@ -2,6 +2,9 @@
 #define MARKER_CACHE_H
 #include <shmbloomfilter.h>
 #include <boost/interprocess/containers/deque.hpp>
+#include <boost/interprocess/sync/interprocess_sharable_mutex.hpp>
+#include <boost/interprocess/sync/sharable_lock.hpp>
+#include <boost/interprocess/sync/upgradable_lock.hpp>
 #include <ctime>
 #include <memory>
 
@@ -55,10 +58,13 @@ class marker_cache {
     // the SD side
     time_t sec_filterduration;
 
-    bool within_timerange(time_t time, timerange range) const;
+    bool marker_cache::overlapping_timerange(timerange fst,
+                                             timerange snd) const;
 
     // Called by maybe_age if an age is required
     void age();
+
+	boost::interprocess::interprocess_sharable_mutex *mutex;
 };
 
 #endif

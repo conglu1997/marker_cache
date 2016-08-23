@@ -24,13 +24,13 @@ typedef unsigned __int64 uint64_t;
 
 #endif  // !defined(_MSC_VER)
 
-struct hash_t {
+struct hash128_t {
     uint64_t h1, h2;
 };
 
 //-----------------------------------------------------------------------------
 
-hash_t MurmurHash3_x64_128(const void* key, int len, uint32_t seed);
+hash128_t MurmurHash3_x64_128(const void* key, int len, uint32_t seed);
 
 //-----------------------------------------------------------------------------
 

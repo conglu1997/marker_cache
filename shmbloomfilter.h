@@ -22,9 +22,9 @@ class shm_bloom_filter {
    public:
     shm_bloom_filter(const void_allocator& void_alloc, size_t m, size_t k);
 
-    bool lookup(hash_t hash) const;
-    void insert(hash_t hash);
-    static hash_t hash(char* data, int data_len);
+    bool lookup(hash128_t hash) const;
+    void insert(hash128_t hash);
+    static hash128_t hash(char* data, int data_len);
 
     void reset();
 
