@@ -86,11 +86,14 @@ bool marker_cache::lookup_from(time_t start, time_t end, char* data,
 
     // Iterate through the buffer, searching in the overlapping timerange;
     for (cache_buffer::iterator i = buf_->begin(); i != buf_->end(); ++i) {
-        if (!within_search_period &&
-            !overlapping_timerange(search_period, i->first))
-            continue;
+        if (!overlapping_timerange(search_period, i->first)) {
+            if (!within_search_period) {
+                continue;
+            } else {
+                break;
+            }
+        }
         within_search_period = true;
-        if (!overlapping_timerange(search_period, i->first)) break;
         if (i->second.lookup(h)) return true;
     }
 
