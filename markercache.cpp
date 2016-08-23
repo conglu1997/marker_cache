@@ -66,7 +66,7 @@ bool marker_cache::lookup_from(time_t start, time_t end, char* data,
     if (end < buf_->front().first.first) return false;
 
     // Assume searches tend to be closer to the current, do naive linear search
-    // for now (In case we have odd cache lengths)
+    // in case Bloom filter durations are not uniform
     cache_buffer::iterator end_it = --buf_->end();
     while (end_it != buf_->begin() && !within_timerange(end, end_it->first))
         --end_it;
