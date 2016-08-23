@@ -61,6 +61,12 @@ struct GeneratedMarkerCache {
 
         return v;
     }
+
+    bool lookup_from_current(char* data, int data_len) const {
+        return m.lookup_from((std::numeric_limits<time_t>::max)(),
+                             (std::numeric_limits<time_t>::max)(), data,
+                             data_len);
+    }
 };
 
 BOOST_FIXTURE_TEST_SUITE(MarkerCacheTests, GeneratedMarkerCache)
@@ -81,8 +87,8 @@ BOOST_AUTO_TEST_CASE(Readable) {
 
     for (vector<pair<char*, int>>::const_iterator i = test_set.cbegin();
          i != test_set.cend(); ++i) {
-        BOOST_CHECK_NO_THROW(m.lookup_from_current(i->first, i->second));
-        if (m.lookup_from_current(i->first, i->second)) num_found++;
+        BOOST_CHECK_NO_THROW(lookup_from_current(i->first, i->second));
+        if (lookup_from_current(i->first, i->second)) num_found++;
     }
 
     t2 = clock();
@@ -95,17 +101,6 @@ BOOST_AUTO_TEST_CASE(Readable) {
          << (min_test_width + max_test_width) / 2 << " bytes in " << t
          << " seconds." << endl;
     BOOST_CHECK_MESSAGE(num_found > 0, "Should be false positives");
-}
-
-BOOST_AUTO_TEST_CASE(TimeRanges) {
-    for (vector<pair<char*, int>>::const_iterator i = test_set.cbegin();
-         i != test_set.cend(); ++i) {
-        BOOST_CHECK_NO_THROW(m.lookup_from(
-            time(NULL), (numeric_limits<time_t>::max)(), i->first, i->second));
-        // Test data did not exist before current period
-        BOOST_CHECK_NO_THROW(
-            !m.lookup_from(0, time(NULL) - 100, i->first, i->second));
-    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

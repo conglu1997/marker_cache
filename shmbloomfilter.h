@@ -14,17 +14,17 @@ typedef boost::interprocess::managed_shared_memory::segment_manager
 typedef boost::interprocess::allocator<void, segment_manager_t> void_allocator;
 
 typedef size_t block_t;
-// Do rebinds to allow changing the void_allocator
+// Do rebinds to allow changing the base void_allocator
 typedef void_allocator::rebind<block_t>::other block_allocator;
 typedef boost::dynamic_bitset<block_t, block_allocator> bitset;
 
 class shm_bloom_filter {
    public:
-    shm_bloom_filter(const void_allocator &void_alloc, size_t m, size_t k);
+    shm_bloom_filter(const void_allocator& void_alloc, size_t m, size_t k);
 
-    bool lookup(uint64_t *hash) const;
-    void insert(uint64_t *hash);
-    static uint64_t *hash(char *data, int data_len);
+    bool lookup(hash_t hash) const;
+    void insert(hash_t hash);
+    static hash_t hash(char* data, int data_len);
 
     void reset();
 

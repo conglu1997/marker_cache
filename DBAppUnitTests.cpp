@@ -77,6 +77,17 @@ struct GeneratedMarkerCache {
 
         return v;
     }
+
+    bool lookup_from_current(char* data, int data_len) const {
+        return m->lookup_from((std::numeric_limits<time_t>::max)(),
+                              (std::numeric_limits<time_t>::max)(), data,
+                              data_len);
+    }
+
+    bool lookup_from_all(char* data, int data_len) const {
+        return m->lookup_from(0, (std::numeric_limits<time_t>::max)(), data,
+                              data_len);
+    }
 };
 
 const double GeneratedMarkerCache::test_fprate = 0.001;
@@ -89,7 +100,7 @@ BOOST_AUTO_TEST_CASE(NoFalseNegatives) {
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i) {
         BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
-        BOOST_CHECK_MESSAGE(m->lookup_from_current(i->first, i->second),
+        BOOST_CHECK_MESSAGE(lookup_from_current(i->first, i->second),
                             "False Negative - fatal error");
     }
 }
@@ -105,7 +116,7 @@ BOOST_AUTO_TEST_CASE(FalsePositiveRate) {
 
     for (vector<pair<char*, int>>::const_iterator i = test_set_two.cbegin();
          i != test_set_two.cend(); ++i)
-        if (m->lookup_from_current(i->first, i->second)) ++falsepos;
+        if (lookup_from_current(i->first, i->second)) ++falsepos;
 
     double observed_fprate = (double)falsepos / (double)test_size;
 
@@ -119,41 +130,55 @@ BOOST_AUTO_TEST_CASE(Ageing) {
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i) {
         BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
-        BOOST_CHECK_MESSAGE(m->lookup_from_current(i->first, i->second),
+        BOOST_CHECK_MESSAGE(lookup_from_current(i->first, i->second),
                             "False Negative - fatal error");
     }
 
+    // Checking maybe_age without a force will not age data
+    m->maybe_age();
+    for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
+         i != test_set_one.cend(); ++i)
+        BOOST_CHECK_MESSAGE(lookup_from_current(i->first, i->second),
+                            "Data prematurely aged - fatal error");
+
+    // Forcing ages for testing
     for (int i = 0; i < num_filters - 1; ++i) {
-        m->age();
+        m->maybe_age(true);
         // Search entire timespan to make sure data still exists
         for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
              i != test_set_one.cend(); ++i)
-            BOOST_CHECK_NO_THROW(m->lookup_from(
-                0, (numeric_limits<time_t>::max)(), i->first, i->second));
+            BOOST_CHECK(lookup_from_all(i->first, i->second));
     }
-    m->age();
+    m->maybe_age(true);
     // Ensure data is gone after *num_filters* ageing cycles
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i)
-        BOOST_CHECK_NO_THROW(!m->lookup_from(0, (numeric_limits<time_t>::max)(),
-                                             i->first, i->second));
+        BOOST_CHECK(!lookup_from_all(i->first, i->second));
 }
 
 BOOST_AUTO_TEST_CASE(TimerangeLookups) {
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i) {
         BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
-        BOOST_CHECK_MESSAGE(m->lookup_from_current(i->first, i->second),
+        BOOST_CHECK_MESSAGE(lookup_from_current(i->first, i->second),
                             "False Negative - fatal error");
     }
 
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i) {
-        BOOST_CHECK_NO_THROW(m->lookup_from(
-            time(NULL), (numeric_limits<time_t>::max)(), i->first, i->second));
+        BOOST_CHECK(lookup_from_all(i->first, i->second));
         // Test data did not exist before current period
-        BOOST_CHECK_NO_THROW(
-            !m->lookup_from(0, time(NULL) - 100, i->first, i->second));
+        BOOST_CHECK(!m->lookup_from(0, time(NULL) - 100, i->first, i->second));
+    }
+}
+
+BOOST_AUTO_TEST_CASE(SufficientMemoryAllocated) {
+    size_t num_filters = ceil((double)lifespan / (double)dur) + 1;
+    for (int i = 0; i <= num_filters; ++i) {
+        for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
+             i != test_set_one.cend(); ++i)
+            BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
+        BOOST_CHECK_NO_THROW(m->maybe_age(true));
     }
 }
 
