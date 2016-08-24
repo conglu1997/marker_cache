@@ -5,6 +5,9 @@ shm_bloom_filter::shm_bloom_filter(const void_allocator& void_alloc, size_t m,
                                    size_t k)
     : bits_(m, false, void_alloc), num_hashes(k) {}
 
+shm_bloom_filter::shm_bloom_filter(const void_allocator& void_alloc)
+    : bits_(void_alloc) {}
+
 bool shm_bloom_filter::lookup(hash128_t hash) const {
     for (int i = 0; i < num_hashes; ++i)
         if (!bits_[(hash.h1 + i * hash.h2) % bits_.size()]) return false;

@@ -149,7 +149,8 @@ BOOST_AUTO_TEST_CASE(Ageing) {
              i != test_set_one.cend(); ++i)
             BOOST_CHECK(lookup_from_all(i->first, i->second));
     }
-    m->maybe_age(true);
+    // Don't save at this point
+    m->maybe_age(true, false);
     // Ensure data is gone after *num_filters* ageing cycles
     for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
          i != test_set_one.cend(); ++i)
@@ -174,11 +175,11 @@ BOOST_AUTO_TEST_CASE(TimerangeLookups) {
 
 BOOST_AUTO_TEST_CASE(SufficientMemoryAllocated) {
     size_t num_filters = ceil((double)lifespan / (double)dur) + 1;
-    for (int i = 0; i <= num_filters; ++i) {
+    for (int i = 0; i <= 2 * num_filters; ++i) {
         for (vector<pair<char*, int>>::const_iterator i = test_set_one.cbegin();
              i != test_set_one.cend(); ++i)
             BOOST_CHECK_NO_THROW(m->insert(i->first, i->second));
-        BOOST_CHECK_NO_THROW(m->maybe_age(true));
+        BOOST_CHECK_NO_THROW(m->maybe_age(true, false));
     }
 }
 
