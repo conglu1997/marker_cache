@@ -48,13 +48,22 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
     size_t filter_capacity = std::ceil((double)m / (double)num_filters);
 
     std::vector<boost::filesystem::path> v;
+    time_t now = time(NULL);
+
     if (boost::filesystem::exists(archive_dir) &&
         boost::filesystem::is_directory(archive_dir)) {
         boost::filesystem::directory_iterator it(archive_dir);
 
         // Load list of saved filters
         while (it != boost::filesystem::directory_iterator()) {
-            if (it->path().extension() == ".filter") v.push_back(it->path());
+            if (it->path().extension() == ".filter") {
+                // Extract the timestamp and ignore outdated filters
+                if (std::stoi(
+                        it->path().filename().replace_extension("").string()) +
+                        sec_filterduration * num_filters >=
+                    now)
+                    v.push_back(it->path());
+            }
             ++it;
         }
     }
@@ -80,7 +89,6 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
     BOOST_LOG_SEV(lg, boost::log::trivial::trace) << "Finished loading.";
 
     // Insert the current filter
-    time_t now = time(NULL);
     BOOST_LOG_SEV(lg, boost::log::trivial::info) << "New filter at: " << now;
     buf_->push_back(
         bf_pair(timerange(now, (std::numeric_limits<time_t>::max)()),
