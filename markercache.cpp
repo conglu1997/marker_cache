@@ -103,6 +103,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
 }
 
 marker_cache::marker_cache() : owner_(false) {
+	// The reading process needs to be able to lock the mutex
     segment_ = new boost::interprocess::managed_shared_memory(
         boost::interprocess::open_only, "CacheSharedMemory");
     buf_ = segment_->find<cache_buffer>("MarkerCache").first;
