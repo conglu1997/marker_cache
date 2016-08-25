@@ -52,7 +52,7 @@ int main() {
     // Fill up the cache with data
     for (size_t i = 0; i < 3; ++i) {
         // Don't save this data
-        m.maybe_age(true, false);
+        m.maybe_age(true);
         vector<pair<char *, int>> test_set =
             generate_test_data(test_size, min_test_width, max_test_width);
 

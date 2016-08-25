@@ -103,7 +103,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
 }
 
 marker_cache::marker_cache() : owner_(false) {
-	// The reading process needs to be able to lock the mutex
+    // The reading process needs to be able to lock the mutex
     segment_ = new boost::interprocess::managed_shared_memory(
         boost::interprocess::open_only, "CacheSharedMemory");
     buf_ = segment_->find<cache_buffer>("MarkerCache").first;
@@ -161,7 +161,7 @@ void marker_cache::insert(char* data, int data_len) {
     buf_->back().second.insert(bf::shm_bloom_filter::hash(data, data_len));
 }
 
-void marker_cache::maybe_age(bool force, bool save) {
+void marker_cache::maybe_age(bool force) {
     if (force ||
         (buf_->back().first.first + sec_filterduration <= time(NULL))) {
         // Forbid searching while ageing the data since removing elements will
@@ -175,6 +175,13 @@ void marker_cache::maybe_age(bool force, bool save) {
         // Set finishing time for the current filter
         buf_->back().first.second = std::max(now, buf_->back().first.first);
 
+        // Delete the outdated filter, only keep active filters on disk
+        BOOST_LOG_SEV(lg, boost::log::trivial::info)
+            << "Cleared filter: " << buf_->front().first.first;
+        boost::filesystem::path path =
+            timestamp_to_filepath(buf_->front().first.first);
+        boost::filesystem::remove(path);
+
         // Move the oldest filter to the front and reset it
         bf::shm_bloom_filter tmp = buf_->front().second;
         buf_->pop_front();
@@ -186,7 +193,7 @@ void marker_cache::maybe_age(bool force, bool save) {
         BOOST_LOG_SEV(lg, boost::log::trivial::info)
             << "New filter at: " << buf_->back().first.first;
 
-        if (save) save_all();
+        save();
         BOOST_LOG_SEV(lg, boost::log::trivial::trace)
             << "Ended an ageing cycle: ";
     }
@@ -196,7 +203,7 @@ bf::void_allocator marker_cache::get_allocator() {
     return segment_->get_segment_manager();
 }
 
-void marker_cache::save_all() {
+void marker_cache::save() {
     if (!boost::filesystem::exists(archive_dir))
         boost::filesystem::create_directory(archive_dir);
 
@@ -204,15 +211,14 @@ void marker_cache::save_all() {
     // During serialization, allocator information is stripped away.
     for (cache_buffer::iterator i = buf_->begin(); i != buf_->end(); ++i) {
         // Label the file with the starting timestamp
-        std::ostringstream ss;
-        ss << archive_dir.string() << '/' << i->first.first << ".filter";
+        boost::filesystem::path path = timestamp_to_filepath(i->first.first);
 
         if (i->first.second != (std::numeric_limits<time_t>::max)() &&
-            !boost::filesystem::exists(ss.str())) {
+            !boost::filesystem::exists(path)) {
             // Write the filter if it's not already written and is not current
             BOOST_LOG_SEV(lg, boost::log::trivial::info) << "Writing to: "
-                                                         << ss.str();
-            std::ofstream ofs(ss.str());
+                                                         << path;
+            std::ofstream ofs(path.string());
             boost::archive::text_oarchive oa(ofs);
             oa << *i;
         }
@@ -223,4 +229,10 @@ void marker_cache::save_all() {
 bool marker_cache::overlapping_timerange(timerange fst, timerange snd) const {
     // Assume ranges are valid
     return (fst.first <= snd.second) && (snd.first <= fst.second);
+}
+
+boost::filesystem::path marker_cache::timestamp_to_filepath(time_t t) {
+    std::ostringstream ss;
+    ss << archive_dir.string() << '/' << t << ".filter";
+    return ss.str();
 }

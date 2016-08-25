@@ -70,10 +70,10 @@ class marker_cache {
     // Takes a boolean parameter to force an ageing cycle, this should only be
     // used for testing purposes
     // Take a parameter to disable automatic saving
-    void maybe_age(bool force = false, bool save = true);
+    void maybe_age(bool force = false);
 
-    // Do a full disk write of all Bloom filters
-    void save_all();
+    // Do a disk write of Bloom filters which have not been saved already
+    void save();
 
    private:
     // The shared memory object
@@ -87,6 +87,8 @@ class marker_cache {
     time_t sec_filterduration;
 
     bool overlapping_timerange(timerange fst, timerange snd) const;
+
+    boost::filesystem::path timestamp_to_filepath(time_t t);
 
     boost::interprocess::interprocess_sharable_mutex *mutex;
 
