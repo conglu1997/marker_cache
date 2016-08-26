@@ -205,7 +205,7 @@ void marker_cache::maybe_age(bool force) {
         (buf_->back().first.first + sec_filterduration <= time(NULL))) {
         BOOST_LOG_SEV(lg, boost::log::trivial::trace)
             << "Started an ageing cycle: ";
-        
+
         time_t now = time(NULL);
         // Set finishing time for the current filter
         buf_->back().first.second = std::max(now, buf_->back().first.first);
@@ -217,12 +217,12 @@ void marker_cache::maybe_age(bool force) {
             timestamp_to_filepath(buf_->front().first.first);
         boost::filesystem::remove(path);
 
-		// Remove the filter from memory
-		// Forbid searching while ageing the data since removing elements will
-		// invalidate the cache_buffer iterators
-		boost::interprocess::scoped_lock<
-			boost::interprocess::interprocess_sharable_mutex>
-			lock(*mutex);
+        // Remove the filter from memory
+        // Forbid searching while ageing the data since removing elements will
+        // invalidate the cache_buffer iterators
+        boost::interprocess::scoped_lock<
+            boost::interprocess::interprocess_sharable_mutex>
+            lock(*mutex);
         buf_->pop_front();
 
         // Enforce unique starting points for the filters
