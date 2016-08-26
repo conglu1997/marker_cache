@@ -84,7 +84,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
         if (buf_->size() >= num_filters - 1) break;
 
         std::ifstream ifs(i->string());
-        boost::archive::text_iarchive ia(ifs);
+        boost::archive::binary_iarchive ia(ifs);
         bf_pair b(get_allocator());
         ia >> b;
         BOOST_LOG_SEV(lg, boost::log::trivial::info)
@@ -257,7 +257,7 @@ void marker_cache::save() {
             BOOST_LOG_SEV(lg, boost::log::trivial::info) << "Writing to: "
                                                          << path;
             std::ofstream ofs(path.string());
-            boost::archive::text_oarchive oa(ofs);
+            boost::archive::binary_oarchive oa(ofs);
             oa << *i;
         }
     }
