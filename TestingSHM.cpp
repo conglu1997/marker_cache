@@ -46,22 +46,25 @@ int main() {
 
     size_t min_test_width = 50;
     size_t max_test_width = 250;
-    vector<pair<char *, int>> test_set =
-        generate_test_data(test_size, min_test_width, max_test_width);
 
     marker_cache m(dur, lifespan, test_fprate, test_size * num_filters);
 
-    for (vector<pair<char *, int>>::const_iterator i = test_set.cbegin();
-         i != test_set.cend(); ++i)
-        m.insert(i->first, i->second);
+    // Fill up the cache with data
+    for (size_t i = 0; i < 3; ++i) {
+        // Don't save this data
+        m.maybe_age(true);
+        vector<pair<char *, int>> test_set =
+            generate_test_data(test_size, min_test_width, max_test_width);
+
+        for (vector<pair<char *, int>>::const_iterator i = test_set.cbegin();
+             i != test_set.cend(); ++i)
+            m.insert(i->first, i->second);
+
+        for (vector<pair<char *, int>>::iterator i = test_set.begin();
+             i != test_set.end(); ++i)
+            delete i->first;
+    }
 
     cout << "Finished preparing shared memory" << endl;
-
     cin.get();
-
-    m.insert(test_set[0].first, test_set[0].second);
-
-    for (vector<pair<char *, int>>::iterator i = test_set.begin();
-         i != test_set.end(); ++i)
-        delete i->first;
 }

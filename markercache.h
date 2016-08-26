@@ -7,10 +7,35 @@
 #include <ctime>
 #include <memory>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/serialization/utility.hpp>
+#include <fstream>
+#include <sstream>
+
+#include <boost/log/core.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/file.hpp>
+
 class marker_cache {
     // Internal-only representation of timeranges
     typedef std::pair<time_t, time_t> timerange;
-    typedef std::pair<timerange, bf::shm_bloom_filter> bf_pair;
+    struct bf_pair {
+        bf_pair(const bf::void_allocator &void_alloc) : second(void_alloc) {}
+        bf_pair(timerange f, bf::shm_bloom_filter s) : first(f), second(s) {}
+        timerange first;
+        bf::shm_bloom_filter second;
+
+        friend class boost::serialization::access;
+        template <class Archive>
+        void serialize(Archive &ar, const unsigned int version) {
+            ar &first;
+            ar &second;
+        }
+    };
 
     typedef bf::void_allocator::rebind<bf_pair>::other bf_pair_allocator;
     typedef boost::interprocess::deque<bf_pair, bf_pair_allocator> cache_buffer;
@@ -44,7 +69,11 @@ class marker_cache {
     // DBAPP will call maybe_age() which can call age()
     // Takes a boolean parameter to force an ageing cycle, this should only be
     // used for testing purposes
+    // Take a parameter to disable automatic saving
     void maybe_age(bool force = false);
+
+    // Do a disk write of Bloom filters which have not been saved already
+    void save();
 
    private:
     // The shared memory object
@@ -57,13 +86,20 @@ class marker_cache {
     // the SD side
     time_t sec_filterduration;
 
-    bool marker_cache::overlapping_timerange(timerange fst,
-                                             timerange snd) const;
+    bool overlapping_timerange(timerange fst, timerange snd) const;
 
-    // Called by maybe_age if an age is required
-    void age();
+    boost::filesystem::path timestamp_to_filepath(time_t t);
 
-	boost::interprocess::interprocess_sharable_mutex *mutex;
+    boost::interprocess::interprocess_sharable_mutex *mutex;
+
+    boost::filesystem::path archive_dir;
+
+    boost::log::sources::severity_logger<boost::log::trivial::severity_level>
+        lg;
+
+	// Bloom filter paramters
+	size_t k;
+	size_t filter_size;
 };
 
 #endif

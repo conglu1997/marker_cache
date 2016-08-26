@@ -67,17 +67,14 @@ struct GeneratedMarkerCache {
                              (std::numeric_limits<time_t>::max)(), data,
                              data_len);
     }
+
+    bool lookup_from_all(char* data, int data_len) const {
+        return m.lookup_from(0, (std::numeric_limits<time_t>::max)(), data,
+                             data_len);
+    }
 };
 
 BOOST_FIXTURE_TEST_SUITE(MarkerCacheTests, GeneratedMarkerCache)
-
-/*
-Testing the shared memory is in fact read-only
--- Throws memory access violation if write attempted
--- Not included since it's not a language level exception
-Testing the same filters exist on the search director side
-Testing reads and false positives
-*/
 
 BOOST_AUTO_TEST_CASE(Readable) {
     size_t num_found = 0;
@@ -99,7 +96,31 @@ BOOST_AUTO_TEST_CASE(Readable) {
          << endl;
     cout << "Completed " << test_size << " searches of average length "
          << (min_test_width + max_test_width) / 2 << " bytes in " << t
-         << " seconds." << endl;
+         << " seconds (current filter)." << endl;
+    BOOST_CHECK_MESSAGE(num_found > 0, "Should be false positives");
+}
+
+BOOST_AUTO_TEST_CASE(TimerangeSearch) {
+    size_t num_found = 0;
+    clock_t t1, t2;
+
+    t1 = clock();
+
+    for (vector<pair<char*, int>>::const_iterator i = test_set.cbegin();
+         i != test_set.cend(); ++i) {
+        BOOST_CHECK_NO_THROW(lookup_from_all(i->first, i->second));
+        if (lookup_from_all(i->first, i->second)) num_found++;
+    }
+
+    t2 = clock();
+
+    float t(((float)t2 - (float)t1) / CLOCKS_PER_SEC);
+
+    cout << num_found << " false positives found out of " << test_size << "."
+         << endl;
+    cout << "Completed " << test_size << " searches of average length "
+         << (min_test_width + max_test_width) / 2 << " bytes in " << t
+         << " seconds (all filters)." << endl;
     BOOST_CHECK_MESSAGE(num_found > 0, "Should be false positives");
 }
 
