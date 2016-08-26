@@ -117,7 +117,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
             // Query the database between the two end points
             std::vector<std::pair<char*, int>> queried_markers;
 
-            /* TODO: Insert magic querying code here */
+            /* TODO: Insert postgres code here */
 
             for (std::vector<std::pair<char*, int>>::iterator i =
                      queried_markers.begin();
@@ -141,7 +141,8 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
 }
 
 marker_cache::marker_cache() : owner_(false) {
-    // The reading process needs to be able to lock the mutex
+    // The reading process needs to be able to lock the mutex so we do not open
+    // in read-only mode
     segment_ = new boost::interprocess::managed_shared_memory(
         boost::interprocess::open_only, "CacheSharedMemory");
     buf_ = segment_->find<cache_buffer>("MarkerCache").first;
@@ -202,13 +203,9 @@ void marker_cache::insert(char* data, int data_len) {
 void marker_cache::maybe_age(bool force) {
     if (force ||
         (buf_->back().first.first + sec_filterduration <= time(NULL))) {
-        // Forbid searching while ageing the data since removing elements will
-        // invalidate the cache_buffer iterators
         BOOST_LOG_SEV(lg, boost::log::trivial::trace)
             << "Started an ageing cycle: ";
-        boost::interprocess::scoped_lock<
-            boost::interprocess::interprocess_sharable_mutex>
-            lock(*mutex);
+        
         time_t now = time(NULL);
         // Set finishing time for the current filter
         buf_->back().first.second = std::max(now, buf_->back().first.first);
@@ -220,15 +217,24 @@ void marker_cache::maybe_age(bool force) {
             timestamp_to_filepath(buf_->front().first.first);
         boost::filesystem::remove(path);
 
-        // Remove the oldest filter and create a new filter
+		// Remove the filter from memory
+		// Forbid searching while ageing the data since removing elements will
+		// invalidate the cache_buffer iterators
+		boost::interprocess::scoped_lock<
+			boost::interprocess::interprocess_sharable_mutex>
+			lock(*mutex);
         buf_->pop_front();
+
         // Enforce unique starting points for the filters
-        buf_->push_back(bf_pair(timerange(buf_->back().first.second + 1,
-                                          (std::numeric_limits<time_t>::max)()),
-			bf::shm_bloom_filter(get_allocator(), filter_size, k)));
+        buf_->push_back(
+            bf_pair(timerange(buf_->back().first.second + 1,
+                              (std::numeric_limits<time_t>::max)()),
+                    bf::shm_bloom_filter(get_allocator(), filter_size, k)));
         BOOST_LOG_SEV(lg, boost::log::trivial::info)
             << "New filter at: " << buf_->back().first.first;
 
+        // No need for mutex on the save
+        lock.unlock();
         save();
         BOOST_LOG_SEV(lg, boost::log::trivial::trace)
             << "Ended an ageing cycle: ";

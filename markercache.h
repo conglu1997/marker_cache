@@ -25,7 +25,8 @@ class marker_cache {
     typedef std::pair<time_t, time_t> timerange;
     struct bf_pair {
         bf_pair(const bf::void_allocator &void_alloc) : second(void_alloc) {}
-        bf_pair(timerange f, bf::shm_bloom_filter s) : first(f), second(s) {}
+        bf_pair(const timerange &f, const bf::shm_bloom_filter &s)
+            : first(f), second(s) {}
         timerange first;
         bf::shm_bloom_filter second;
 
@@ -69,7 +70,6 @@ class marker_cache {
     // DBAPP will call maybe_age() which can call age()
     // Takes a boolean parameter to force an ageing cycle, this should only be
     // used for testing purposes
-    // Take a parameter to disable automatic saving
     void maybe_age(bool force = false);
 
     // Do a disk write of Bloom filters which have not been saved already
@@ -97,9 +97,9 @@ class marker_cache {
     boost::log::sources::severity_logger<boost::log::trivial::severity_level>
         lg;
 
-	// Bloom filter paramters
-	size_t k;
-	size_t filter_size;
+    // Bloom filter paramters
+    size_t k;
+    size_t filter_size;
 };
 
 #endif
