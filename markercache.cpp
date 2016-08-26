@@ -237,7 +237,7 @@ void marker_cache::maybe_age(bool force) {
         lock.unlock();
         save();
         BOOST_LOG_SEV(lg, boost::log::trivial::trace)
-            << "Ended an ageing cycle: ";
+            << "Ended an ageing cycle.";
     }
 }
 
