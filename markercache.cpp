@@ -61,8 +61,13 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
                 if (std::stoi(
                         it->path().filename().replace_extension("").string()) +
                         sec_filterduration * num_filters >=
-                    now)
+                    now) {
+                    // Active filter
                     v.push_back(it->path());
+                } else {
+                    // Clear the disk
+                    boost::filesystem::remove(it->path());
+                }
             }
             ++it;
         }
@@ -88,11 +93,44 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
     }
     BOOST_LOG_SEV(lg, boost::log::trivial::trace) << "Finished loading.";
 
-    // Insert the current filter
-    BOOST_LOG_SEV(lg, boost::log::trivial::info) << "New filter at: " << now;
-    buf_->push_back(
-        bf_pair(timerange(now, (std::numeric_limits<time_t>::max)()),
+    if (buf_->empty()) {
+        // No filters loaded
+        BOOST_LOG_SEV(lg, boost::log::trivial::info) << "New filter at: "
+                                                     << now;
+        buf_->push_back(
+            bf_pair(timerange(now, (std::numeric_limits<time_t>::max)()),
+                    bf::shm_bloom_filter(get_allocator(), filter_capacity, k)));
+    } else {
+        // Resume the filter from the last stopping point
+        // Query the database for markers that lie in the missing timerange
+        while (buf_->back().first.second <= now) {
+            time_t rebuild_start = buf_->back().first.second;
+            time_t rebuild_end = rebuild_start + sec_filterduration - 1;
+            BOOST_LOG_SEV(lg, boost::log::trivial::info)
+                << "Rebuilding filter from: " << rebuild_start << " to "
+                << rebuild_end;
+            buf_->push_back(bf_pair(
+                timerange(std::max(buf_->back().first.first + 1, rebuild_start),
+                          rebuild_end),
                 bf::shm_bloom_filter(get_allocator(), filter_capacity, k)));
+
+            // Query the database between the two end points
+            std::vector<std::pair<char*, int>> queried_markers;
+
+            /* TODO: Insert magic querying code here */
+
+            for (std::vector<std::pair<char*, int>>::iterator i =
+                     queried_markers.begin();
+                 i != queried_markers.end(); ++i)
+                insert(i->first, i->second);
+
+            // Guarantee the number of filters does not exceed capacity
+            maybe_age();
+        }
+    }
+
+    // Mark the current filter
+    buf_->back().first.second = (std::numeric_limits<time_t>::max)();
 
     // Backdate empty filters to allow ageing cycles
     while (buf_->size() < num_filters)
