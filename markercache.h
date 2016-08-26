@@ -7,8 +7,8 @@
 #include <ctime>
 #include <memory>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/serialization/utility.hpp>
 #include <fstream>
@@ -96,6 +96,10 @@ class marker_cache {
 
     boost::log::sources::severity_logger<boost::log::trivial::severity_level>
         lg;
+
+	// Bloom filter paramters
+	size_t k;
+	size_t filter_size;
 };
 
 #endif

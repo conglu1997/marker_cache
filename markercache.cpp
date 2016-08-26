@@ -27,7 +27,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
     double frac = (double)m / (double)total_capacity;
     // Num. hash functions
     // k = (m/n)*ln2
-    size_t k = std::ceil(frac * ln2);
+    k = std::ceil(frac * ln2);
 
     size_t num_filters =
         std::ceil((double)min_filterlifespan / (double)min_filterduration) + 1;
@@ -45,7 +45,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
     mutex = segment_->find_or_construct<
         boost::interprocess::interprocess_sharable_mutex>("CacheMutex")();
 
-    size_t filter_capacity = std::ceil((double)m / (double)num_filters);
+    filter_size = std::ceil((double)m / (double)num_filters);
 
     std::vector<boost::filesystem::path> v;
     time_t now = time(NULL);
@@ -84,7 +84,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
         if (buf_->size() >= num_filters - 1) break;
 
         std::ifstream ifs(i->string());
-        boost::archive::binary_iarchive ia(ifs);
+        boost::archive::text_iarchive ia(ifs);
         bf_pair b(get_allocator());
         ia >> b;
         BOOST_LOG_SEV(lg, boost::log::trivial::info)
@@ -99,7 +99,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
                                                      << now;
         buf_->push_back(
             bf_pair(timerange(now, (std::numeric_limits<time_t>::max)()),
-                    bf::shm_bloom_filter(get_allocator(), filter_capacity, k)));
+                    bf::shm_bloom_filter(get_allocator(), filter_size, k)));
     } else {
         // Resume the filter from the last stopping point
         // Query the database for markers that lie in the missing timerange
@@ -112,7 +112,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
             buf_->push_back(bf_pair(
                 timerange(std::max(buf_->back().first.first + 1, rebuild_start),
                           rebuild_end),
-                bf::shm_bloom_filter(get_allocator(), filter_capacity, k)));
+                bf::shm_bloom_filter(get_allocator(), filter_size, k)));
 
             // Query the database between the two end points
             std::vector<std::pair<char*, int>> queried_markers;
@@ -137,7 +137,7 @@ marker_cache::marker_cache(size_t min_filterduration, size_t min_filterlifespan,
         buf_->push_front(
             bf_pair(timerange(buf_->front().first.first - sec_filterduration,
                               buf_->front().first.first - 1),
-                    bf::shm_bloom_filter(get_allocator(), filter_capacity, k)));
+                    bf::shm_bloom_filter(get_allocator(), filter_size, k)));
 }
 
 marker_cache::marker_cache() : owner_(false) {
@@ -220,14 +220,12 @@ void marker_cache::maybe_age(bool force) {
             timestamp_to_filepath(buf_->front().first.first);
         boost::filesystem::remove(path);
 
-        // Move the oldest filter to the front and reset it
-        bf::shm_bloom_filter tmp = buf_->front().second;
+        // Remove the oldest filter and create a new filter
         buf_->pop_front();
-        tmp.reset();
         // Enforce unique starting points for the filters
         buf_->push_back(bf_pair(timerange(buf_->back().first.second + 1,
                                           (std::numeric_limits<time_t>::max)()),
-                                tmp));
+			bf::shm_bloom_filter(get_allocator(), filter_size, k)));
         BOOST_LOG_SEV(lg, boost::log::trivial::info)
             << "New filter at: " << buf_->back().first.first;
 
@@ -257,7 +255,7 @@ void marker_cache::save() {
             BOOST_LOG_SEV(lg, boost::log::trivial::info) << "Writing to: "
                                                          << path;
             std::ofstream ofs(path.string());
-            boost::archive::binary_oarchive oa(ofs);
+            boost::archive::text_oarchive oa(ofs);
             oa << *i;
         }
     }
